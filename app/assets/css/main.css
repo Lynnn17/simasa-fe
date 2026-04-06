@@ -1,0 +1,202 @@
+@import "@mdi/font/css/materialdesignicons.min.css";
+@import "tailwindcss";
+
+/* Enable class-based dark mode */
+@variant dark (&:where(.dark, .dark *));
+
+/* Custom theme variables */
+@theme {
+    /* Base primary color - all shades will be derived from this */
+    --color-primary-base: #E53935;
+    
+    /* Colors - Generated from primary-base */
+    --color-primary-50: color-mix(in srgb, white 90%, var(--color-primary-base));
+    --color-primary-100: color-mix(in srgb, white 80%, var(--color-primary-base));
+    --color-primary-200: color-mix(in srgb, white 70%, var(--color-primary-base));
+    --color-primary-300: color-mix(in srgb, white 55%, var(--color-primary-base));
+    --color-primary-400: color-mix(in srgb, white 40%, var(--color-primary-base));
+    --color-primary-500: var(--color-primary-base);
+    --color-primary-600: color-mix(in srgb, black 10%, var(--color-primary-base));
+    --color-primary-700: color-mix(in srgb, black 20%, var(--color-primary-base));
+    --color-primary-800: color-mix(in srgb, black 30%, var(--color-primary-base));
+    --color-primary-900: color-mix(in srgb, black 40%, var(--color-primary-base));
+    --color-primary-950: color-mix(in srgb, black 50%, var(--color-primary-base));
+
+    /* Sidebar width */
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px;
+
+    /* Font family */
+    --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+
+/* Base styles */
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply font-sans antialiased;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        @apply w-2 h-2;
+    }
+
+    ::-webkit-scrollbar-track {
+        @apply bg-slate-100 dark:bg-slate-800;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        @apply bg-slate-300 dark:bg-slate-600 rounded-full;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        @apply bg-slate-400 dark:bg-slate-500;
+    }
+}
+
+/* Component utilities */
+@layer components {
+
+    /* Glass effect */
+    .glass {
+        @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg;
+    }
+
+    /* Card styles - base styles with Modernize smooth shadow */
+    .card {
+        @apply bg-white dark:bg-slate-800 rounded-xl border-0;
+        box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+    }
+
+    /* Card with hover effect - fully expanded */
+    .card-hover {
+        @apply bg-white dark:bg-slate-800 rounded-xl border-0 transition-all duration-300;
+        box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+    }
+
+    .card-hover:hover {
+        box-shadow: rgba(145, 158, 171, 0.3) 0px 0px 3px 0px, rgba(145, 158, 171, 0.2) 0px 16px 32px -4px;
+        transform: translateY(-2px);
+    }
+
+    /* Input styles */
+    .input-base {
+        @apply w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all duration-200;
+    }
+
+    /* Button base */
+    .btn {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+
+    /* Button variants - fully expanded */
+    .btn-primary {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-primary-600 text-white hover:bg-primary-700 active:bg-primary-800 shadow-lg shadow-primary-500/25 hover:shadow-xl hover:shadow-primary-500/30;
+    }
+
+    .btn-secondary {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600;
+    }
+
+    .btn-ghost {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800;
+    }
+
+    .btn-danger {
+        @apply inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-lg shadow-red-500/25;
+    }
+
+    /* Sidebar navigation item */
+    .nav-item {
+        @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-700 dark:text-slate-300 transition-all duration-200 hover:bg-primary-50 dark:hover:bg-primary-950/50;
+    }
+
+    /* Nav item active - uses dynamic primary color */
+    .nav-item-active {
+        @apply flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 font-medium bg-primary-500 text-white hover:bg-primary-600;
+    }
+
+    /* Sub menu item - text only highlight */
+    .nav-sub-item {
+        @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-slate-600 dark:text-slate-400 transition-all duration-200 hover:text-primary-500 dark:hover:text-primary-400;
+    }
+
+    .nav-sub-item-active {
+        @apply flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200 font-medium text-primary-500 dark:text-primary-400;
+    }
+
+    /* Badge styles */
+    .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    }
+
+    /* Badge variants - fully expanded */
+    .badge-primary {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300;
+    }
+
+    .badge-success {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300;
+    }
+
+    .badge-warning {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300;
+    }
+
+    .badge-danger {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300;
+    }
+}
+
+/* Animations */
+@layer utilities {
+    .animate-fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .animate-slide-in {
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .animate-scale-in {
+        animation: scaleIn 0.2s ease-out;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
