@@ -76,7 +76,7 @@
           v-for="(item, index) in items"
           :key="item[rowKey] || index"
           :class="[
-            'transition-colors',
+            'transition-colors duration-150',
             rowClickable ? 'cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50' : '',
             getRowClass ? getRowClass({ item, index }) : ''
           ]"

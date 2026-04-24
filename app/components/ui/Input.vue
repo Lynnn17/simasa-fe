@@ -60,6 +60,8 @@ const validateWithRules = (value: any): boolean | string => {
   return true;
 };
 
+const fieldValidator = props.rules.length > 0 ? validateWithRules : undefined;
+
 // Use vee-validate's useField for form integration
 const { 
   value: fieldValue, 
@@ -69,7 +71,7 @@ const {
   resetField,
   validate: validateField,
   meta,
-} = useField<string | number>(fieldName, validateWithRules, {
+} = useField<string | number>(fieldName, fieldValidator, {
   initialValue: props.modelValue,
   validateOnValueUpdate: true, // Enable real-time validation
   validateOnMount: false,
@@ -107,6 +109,7 @@ const hasValue = computed(() => {
 // Handle input event
 const onInput = (event: Event) => {
   const value = (event.target as HTMLInputElement).value;
+  if (value === fieldValue.value) return;
   fieldValue.value = value;
   veeHandleChange(event, true); // true = should validate
 };

@@ -28,14 +28,14 @@ onMounted(() => {
 <template>
   <header
     :class="[
-      'fixed top-0 z-30 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg transition-all duration-300',
+      'fixed top-0 z-30 h-16 bg-white/80 dark:bg-slate-900/80 transition-[left,right,background-color] duration-300',
       sidebarLayout === 'horizontal' 
         ? 'left-0 right-0' 
         : sidebarCollapsed ? 'left-0 lg:left-20 right-0' : 'left-0 lg:left-64 right-0',
     ]"
     style="box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;"
   >
-    <div class="flex items-center justify-between h-full px-4 lg:px-6">
+    <div v-if="sidebarLayout" class="flex items-center justify-between h-full px-4 lg:px-6">
       <!-- Left section -->
       <div class="flex items-center gap-4">
         <!-- Logo (only for horizontal layout on desktop) -->

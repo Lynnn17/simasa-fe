@@ -111,9 +111,12 @@ const adjustHeight = () => {
 // Handle input event
 const onInput = (event: Event) => {
   const value = (event.target as HTMLTextAreaElement).value;
+  if (value === fieldValue.value) return;
   fieldValue.value = value;
   veeHandleChange(event, true);
-  nextTick(adjustHeight);
+  if (props.autoResize) {
+    nextTick(adjustHeight);
+  }
 };
 
 // Handle blur event

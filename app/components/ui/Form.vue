@@ -5,6 +5,7 @@
  * Combines the best of both worlds:
  * - Vuetify-style: rules prop on each field
  * - Vee-validate: form state management, validation, touched/dirty tracking
+ * - Zod/typed schemas via validationSchema prop
  * 
  * Usage:
  * <UiForm ref="formRef" v-model="isValid" @submit="onSubmit">
@@ -16,11 +17,17 @@ import { useForm } from 'vee-validate';
 interface Props {
   modelValue?: boolean;
   disabled?: boolean;
+  validationSchema?: unknown;
+  initialValues?: Record<string, unknown>;
+  validateOnMount?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: true,
   disabled: false,
+  validationSchema: undefined,
+  initialValues: () => ({}),
+  validateOnMount: false,
 });
 
 const emit = defineEmits<{
@@ -29,7 +36,11 @@ const emit = defineEmits<{
 }>();
 
 // Use vee-validate's form management
-const { handleSubmit, resetForm, values, meta, setFieldError, validate } = useForm();
+const { handleSubmit, resetForm, values, meta, errors, setFieldError, validate } = useForm({
+  validationSchema: props.validationSchema,
+  initialValues: props.initialValues,
+  validateOnMount: props.validateOnMount,
+});
 
 // Watch form validity and emit
 watch(() => meta.value.valid, (valid) => {
@@ -69,6 +80,7 @@ defineExpose({
   reset,
   resetValidation,
   values,
+  errors,
   isValid: computed(() => meta.value.valid),
 });
 </script>

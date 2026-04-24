@@ -36,9 +36,9 @@ const decline = () => {
   >
     <div
       v-if="isVisible"
-      class="fixed bottom-6 right-6 z-[60] w-full max-w-sm"
+      class="fixed bottom-6 right-6 z-[60] w-full max-w-sm will-change-transform"
     >
-      <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden">
+      <div class="bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-black/50 overflow-hidden">
         <!-- Glow effect -->
         <div class="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-blue-500/20 blur-3xl pointer-events-none"></div>
 

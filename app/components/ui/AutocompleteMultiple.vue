@@ -77,14 +77,18 @@ const {
 
 // Sync modelValue -> fieldValue
 watch(() => props.modelValue, (newVal) => {
-  if (JSON.stringify(newVal) !== JSON.stringify(fieldValue.value)) {
+  if (newVal === fieldValue.value) return;
+  if (!newVal || !fieldValue.value || newVal.length !== fieldValue.value.length || 
+      newVal.some((v, i) => v !== fieldValue.value[i])) {
     fieldValue.value = newVal || [];
   }
 }, { immediate: true });
 
 // Sync fieldValue -> modelValue
 watch(fieldValue, (newVal) => {
-  if (JSON.stringify(newVal) !== JSON.stringify(props.modelValue)) {
+  if (newVal === props.modelValue) return;
+  if (!newVal || !props.modelValue || newVal.length !== props.modelValue.length || 
+      newVal.some((v, i) => v !== props.modelValue[i])) {
     emit('update:modelValue', newVal || []);
   }
 });

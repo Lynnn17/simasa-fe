@@ -148,23 +148,30 @@ watch(isOpen, async (val) => {
 
 // Selected option
 const selectedOption = computed(() => {
+  if (fieldValue.value === null || fieldValue.value === undefined) return null;
   return props.options.find((opt) => getItemValue(opt) === fieldValue.value) || null;
 });
 
 // Sync search query with selected value - watch both fieldValue and options
 watch([() => fieldValue.value, () => props.options], ([newVal, options]) => {
-  if (newVal && options.length > 0) {
+  if (newVal !== null && newVal !== undefined && options.length > 0) {
     const selected = options.find((opt: any) => getItemValue(opt) === newVal);
     if (selected) {
-      searchQuery.value = getItemTitle(selected);
+      const title = getItemTitle(selected);
+      if (searchQuery.value !== title) {
+        searchQuery.value = title;
+      }
     }
   } else if (!newVal) {
-    searchQuery.value = "";
+    if (searchQuery.value !== "") {
+      searchQuery.value = "";
+    }
   }
 }, { immediate: true });
 
 const handleInput = (event: Event) => {
   const query = (event.target as HTMLInputElement).value;
+  if (searchQuery.value === query) return;
   searchQuery.value = query;
   isOpen.value = true;
   emit("search", query);
@@ -180,6 +187,10 @@ const handleInput = (event: Event) => {
 
 const handleSelect = (option: any) => {
   const value = getItemValue(option);
+  if (value === fieldValue.value) {
+    isOpen.value = false;
+    return;
+  }
   fieldValue.value = value;
   // Emit modelValue update FIRST (synchronous)
   emit("update:modelValue", value);
@@ -188,7 +199,10 @@ const handleSelect = (option: any) => {
     emit("change", option);
   });
   isOpen.value = false;
-  searchQuery.value = getItemTitle(option);
+  const title = getItemTitle(option);
+  if (searchQuery.value !== title) {
+    searchQuery.value = title;
+  }
 };
 
 const handleClear = () => {
@@ -283,27 +297,32 @@ defineExpose({ validate: validateField, reset: resetField, meta });
         leave-to-class="transform scale-95 opacity-0"
       >
         <div
-          v-if="isOpen && filteredOptions.length > 0"
+          v-if="isOpen"
           class="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 max-h-60 overflow-y-auto"
         >
-          <ul class="py-1">
-            <li v-for="(option, index) in filteredOptions" :key="getItemValue(option) || index">
-              <button
-                type="button"
-                :data-selected="fieldValue === getItemValue(option)"
-                @click="handleSelect(option)"
-                :class="[
-                  'w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors text-left',
-                  fieldValue === getItemValue(option)
-                    ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
-                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50',
-                ]"
-              >
-                <span>{{ getItemTitle(option) }}</span>
-                <i v-if="fieldValue === getItemValue(option)" class="mdi mdi-check text-primary-500" />
-              </button>
-            </li>
-          </ul>
+          <template v-if="filteredOptions.length > 0">
+            <ul class="py-1">
+              <li v-for="(option, index) in filteredOptions" :key="getItemValue(option) || index">
+                <button
+                  type="button"
+                  :data-selected="fieldValue === getItemValue(option)"
+                  @click="handleSelect(option)"
+                  :class="[
+                    'w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors text-left',
+                    fieldValue === getItemValue(option)
+                      ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 font-medium'
+                      : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50',
+                  ]"
+                >
+                  <span>{{ getItemTitle(option) }}</span>
+                  <i v-if="fieldValue === getItemValue(option)" class="mdi mdi-check text-primary-500" />
+                </button>
+              </li>
+            </ul>
+          </template>
+          <div v-else class="px-4 py-3 text-center text-sm text-slate-500 dark:text-slate-400">
+            Tidak ada data ditemukan
+          </div>
         </div>
       </Transition>
     </div>

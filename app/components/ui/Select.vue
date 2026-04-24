@@ -62,6 +62,8 @@ const validateWithRules = (value: any): boolean | string => {
   return true;
 };
 
+const fieldValidator = props.rules.length > 0 ? validateWithRules : undefined;
+
 // Use vee-validate
 const { 
   value: fieldValue, 
@@ -70,7 +72,7 @@ const {
   resetField,
   validate: validateField,
   meta,
-} = useField<string | number | null>(fieldName, validateWithRules, {
+} = useField<string | number | null>(fieldName, fieldValidator, {
   initialValue: props.modelValue,
   validateOnValueUpdate: true,
   validateOnMount: false,
@@ -143,11 +145,13 @@ const filteredOptions = computed(() => {
 
 // Selected option
 const selectedOption = computed(() => {
+  if (fieldValue.value === null || fieldValue.value === undefined) return null;
   return props.options.find((opt) => getItemValue(opt) === fieldValue.value) || null;
 });
 
 const displayText = computed(() => {
-  if (selectedOption.value) return getItemTitle(selectedOption.value);
+  const opt = selectedOption.value;
+  if (opt) return getItemTitle(opt);
   return props.placeholder;
 });
 
@@ -157,6 +161,10 @@ const hasValue = computed(() => {
 
 const handleSelect = (option: any) => {
   const value = getItemValue(option);
+  if (value === fieldValue.value) {
+    isOpen.value = false;
+    return;
+  }
   fieldValue.value = value;
   emit("update:modelValue", value);
   nextTick(() => {
@@ -168,6 +176,7 @@ const handleSelect = (option: any) => {
 
 const handleClear = (event: MouseEvent) => {
   event.stopPropagation();
+  if (fieldValue.value === null) return;
   fieldValue.value = null;
   emit("update:modelValue", null);
   nextTick(() => {
