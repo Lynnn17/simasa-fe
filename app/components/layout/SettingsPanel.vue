@@ -41,7 +41,7 @@ const closePanel = () => {
   >
     <div
       v-if="isOpen"
-      class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50"
+      class="fixed inset-0 bg-slate-900/50 z-50"
       @click="closePanel"
     />
   </Transition>
@@ -57,7 +57,7 @@ const closePanel = () => {
   >
     <aside
       v-if="isOpen"
-      class="fixed top-0 right-0 z-50 h-full w-80 bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto"
+      class="fixed top-0 right-0 z-50 h-full w-80 bg-white dark:bg-slate-900 shadow-2xl overflow-y-auto will-change-transform"
     >
       <!-- Header -->
       <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700">

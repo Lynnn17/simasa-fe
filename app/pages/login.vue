@@ -102,7 +102,7 @@
           <!-- Mobile Logo (Shown only on small screens) -->
           <div class="lg:hidden flex justify-center mb-8">
             <UiAppLogo 
-              image="https://tracking-system-ajinomoto.kotadigital.id/api/files?path=/files/config-app/61ddce09-96b8-4d04-af72-4c5549bd8dbf.webp" 
+              image="/images/logo-ajinomoto.webp" 
               :logo-size="80" 
             />
           </div>

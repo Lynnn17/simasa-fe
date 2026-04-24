@@ -108,7 +108,7 @@ const handleLogout = async () => {
   >
     <div
       v-if="isMobileOpen"
-      class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+      class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden"
       @click="closeMobile"
     />
   </Transition>
@@ -116,7 +116,7 @@ const handleLogout = async () => {
   <!-- Sidebar -->
   <aside
     :class="[
-      'fixed top-0 left-0 z-50 h-full bg-white dark:bg-slate-900 transition-all duration-300',
+      'fixed top-0 left-0 z-50 h-full bg-white dark:bg-slate-900 transition-transform lg:transition-[width,transform] duration-300 will-change-transform',
       isEffectivelyCollapsed ? 'w-20' : 'w-64',
       // Mobile: show when isMobileOpen is true (for both layouts)
       isMobileOpen ? 'translate-x-0' : '-translate-x-full',

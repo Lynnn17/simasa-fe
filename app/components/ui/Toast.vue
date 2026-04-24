@@ -45,7 +45,7 @@ const textColors = {
           v-for="toast in toasts"
           :key="toast.id"
           :class="[
-            'flex items-start gap-3 p-4 rounded-xl border shadow-lg backdrop-blur-sm',
+            'flex items-start gap-3 p-4 rounded-xl border shadow-lg will-change-transform',
             bgColors[toast.type],
           ]"
         >

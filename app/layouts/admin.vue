@@ -63,16 +63,16 @@ const handleLogout = () => {
     <!-- Loading overlay - covers ALL content while not ready -->
     <UiPageLoading v-if="!isReady" class="fixed inset-0 z-[100]" />
 
-    <!-- Always render layout components -->
-    <LayoutSidebar v-if="isReady" />
-    <LayoutHeader v-if="isReady" />
-    <!-- <LayoutSettingsPanel v-if="isReady" /> -->
+    <div v-if="isReady">
+      <LayoutSidebar />
+      <LayoutHeader />
+    </div>
     <UiToast />
 
     <!-- Main content - slot always renders to prevent NuxtPage warning -->
     <main
       :class="[
-        'pt-16 min-h-screen transition-all duration-300 w-full',
+        'pt-16 min-h-screen transition-[padding] duration-300 w-full',
         sidebarLayout === 'vertical'
           ? sidebarCollapsed
             ? 'lg:pl-20'

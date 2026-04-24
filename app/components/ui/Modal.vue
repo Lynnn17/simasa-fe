@@ -59,7 +59,7 @@ const sizeClasses = {
         @click.self="close"
       >
         <!-- Backdrop -->
-        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm" @click="close" />
+        <div class="fixed inset-0 bg-slate-900/50" @click="close" />
 
         <!-- Modal -->
         <div class="flex min-h-full items-center justify-center p-4">
@@ -75,7 +75,7 @@ const sizeClasses = {
             <div
               v-if="modelValue"
               :class="[
-                'relative w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl',
+                'relative w-full bg-white dark:bg-slate-800 rounded-2xl shadow-xl will-change-transform',
                 sizeClasses[size],
               ]"
               @click.stop

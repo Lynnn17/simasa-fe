@@ -375,18 +375,22 @@ const handleRefreshItems = () => {
 }
 
 const handlePageChanged = (page: number) => {
+  if (filterLocal.value.pageNumber === page) return
   filterLocal.value.pageNumber = page
   triggerFilterChange()
 }
 
 const getItemPerPage = (val: number) => {
+  if (itemsPerPage.value === +val) return
   itemsPerPage.value = +val
   filterLocal.value.pageSize = itemsPerPage.value
+  filterLocal.value.pageNumber = 1
   triggerFilterChange()
 }
 
 // Handle sort from UiDataTable component
 const handleDataTableSort = (payload: { key: string; order: 'asc' | 'desc' }) => {
+  if (filterLocal.value.sortBy === payload.key && filterLocal.value.sortType === payload.order) return
   sortBy.value = [{ key: payload.key, order: payload.order }]
   filterLocal.value.sortBy = payload.key
   filterLocal.value.sortType = payload.order
