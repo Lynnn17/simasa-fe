@@ -66,6 +66,29 @@ const selectedData = ref<RegistrationRow | null>(null);
 const { hasPermission } = usePermission();
 const swal = useSwal();
 
+// Pagination & Filters
+const pageNumber = ref(1);
+const pageSize = ref(10);
+const searchQuery = ref("");
+const search = ref("");
+const statusFilter = ref("");
+const paginationMeta = ref<any>({
+  totalData: 0,
+  totalPage: 0,
+  currentPage: 1,
+  pageSize: 10,
+});
+
+// Debounce search
+watch(searchQuery, (val) => {
+  const timeout = setTimeout(() => {
+    if (val === searchQuery.value) {
+      search.value = val;
+    }
+  }, 500);
+  return () => clearTimeout(timeout);
+});
+
 function getRegistrationName(row: RegistrationRow) {
   return (
     row.fullName ||
@@ -168,13 +191,30 @@ async function loadRegistrations() {
   errorMessage.value = "";
 
   try {
-    const response: any = await registrationSvc.getRegistrations();
+    const params = {
+      pageNumber: pageNumber.value,
+      pageSize: pageSize.value,
+      search: search.value,
+      status: statusFilter.value,
+    };
+
+    const response: any = await registrationSvc.getRegistrations(params);
     const data = response?.data;
-    registrations.value = Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data)
-        ? data
-        : [];
+    
+    if (data?.items) {
+      registrations.value = data.items;
+      paginationMeta.value = data.meta;
+    } else if (Array.isArray(data)) {
+      registrations.value = data;
+      paginationMeta.value = {
+        totalData: data.length,
+        totalPage: 1,
+        currentPage: 1,
+        pageSize: data.length,
+      };
+    } else {
+      registrations.value = [];
+    }
   } catch (error: any) {
     errorMessage.value =
       error?.response?._data?.message ||
@@ -184,6 +224,15 @@ async function loadRegistrations() {
   } finally {
     isLoading.value = false;
   }
+}
+
+// Watch filters
+watch([search, statusFilter, pageNumber], () => {
+  loadRegistrations();
+});
+
+function handlePageChange(page: number) {
+  pageNumber.value = page;
 }
 
 async function updateStatus(
@@ -251,12 +300,41 @@ onMounted(() => {
           Dashboard Pendaftar Magang
         </h1>
       </div>
+    </div>
 
+    <div
+      class="flex flex-col md:flex-row gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
+    >
+      <div class="flex-1">
+        <UiInput
+          v-model="searchQuery"
+          placeholder="Cari nama, universitas, atau jurusan..."
+          icon="mdi-magnify"
+        />
+      </div>
+      <div class="w-full md:w-48">
+        <UiSelect
+          v-model="statusFilter"
+          placeholder="Semua Status"
+          :options="[
+            { label: 'Semua Status', value: '' },
+            { label: 'Pending', value: 'pending' },
+            { label: 'Diterima', value: 'accepted' },
+            { label: 'Ditolak', value: 'rejected' },
+          ]"
+        />
+      </div>
       <button
         type="button"
-        class="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white"
+        class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 shadow-sm"
         @click="loadRegistrations"
       >
+        <UiIcon
+          name="mdi-refresh"
+          :class="{ 'animate-spin': isLoading }"
+          size="sm"
+          class="mr-2"
+        />
         Muat Ulang
       </button>
     </div>
@@ -395,6 +473,63 @@ onMounted(() => {
             </template>
           </tbody>
         </table>
+      </div>
+
+      <!-- Pagination Footer -->
+      <div
+        v-if="paginationMeta.totalPage > 1"
+        class="flex flex-col items-center justify-between gap-4 border-t border-slate-200 px-6 py-4 dark:border-slate-800 sm:flex-row"
+      >
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Menampilkan
+          <span class="font-medium text-slate-900 dark:text-white">{{ registrations.length }}</span>
+          dari
+          <span class="font-medium text-slate-900 dark:text-white">{{ paginationMeta.totalData }}</span>
+          pendaftar
+        </p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            :disabled="pageNumber === 1 || isLoading"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            @click="handlePageChange(pageNumber - 1)"
+          >
+            <UiIcon name="mdi-chevron-left" size="sm" />
+          </button>
+          
+          <div class="flex items-center gap-1">
+            <template v-for="p in paginationMeta.totalPage" :key="p">
+              <button
+                v-if="p === 1 || p === paginationMeta.totalPage || (p >= pageNumber - 1 && p <= pageNumber + 1)"
+                type="button"
+                :class="[
+                  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition',
+                  p === pageNumber
+                    ? 'bg-primary-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
+                ]"
+                @click="handlePageChange(p)"
+              >
+                {{ p }}
+              </button>
+              <span 
+                v-else-if="(p === 2 && pageNumber > 3) || (p === paginationMeta.totalPage - 1 && pageNumber < paginationMeta.totalPage - 2)"
+                class="px-1 text-slate-400"
+              >
+                ...
+              </span>
+            </template>
+          </div>
+
+          <button
+            type="button"
+            :disabled="pageNumber === paginationMeta.totalPage || isLoading"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            @click="handlePageChange(pageNumber + 1)"
+          >
+            <UiIcon name="mdi-chevron-right" size="sm" />
+          </button>
+        </div>
       </div>
     </div>
 

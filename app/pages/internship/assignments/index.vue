@@ -25,6 +25,32 @@ const showAssignModal = ref(false);
 const students = ref<any[]>([]);
 const mentors = ref<any[]>([]);
 const assignments = ref<any[]>([]);
+const selectedAssignment = ref<any>(null);
+
+// Pagination & Filters
+const pageNumber = ref(1);
+const pageSize = ref(10);
+const searchQuery = ref("");
+const search = ref("");
+const statusFilter = ref("");
+const mentorFilter = ref("");
+const studentFilter = ref("");
+const paginationMeta = ref<any>({
+  totalData: 0,
+  totalPage: 0,
+  currentPage: 1,
+  pageSize: 10,
+});
+
+// Debounce search
+watch(searchQuery, (val) => {
+  const timeout = setTimeout(() => {
+    if (val === searchQuery.value) {
+      search.value = val;
+    }
+  }, 500);
+  return () => clearTimeout(timeout);
+});
 
 // Form State
 const form = ref({
@@ -68,13 +94,48 @@ async function loadMentors() {
 async function loadAssignments() {
   isLoading.value = true;
   try {
-    const res: any = await assignmentSvc.getMentorAssignments();
-    assignments.value = res?.data?.items || res?.data || [];
+    const params = {
+      pageNumber: pageNumber.value,
+      pageSize: pageSize.value,
+      search: search.value,
+      status: statusFilter.value,
+      mentorId: mentorFilter.value,
+      studentId: studentFilter.value,
+      isActive:
+        statusFilter.value === "" ? undefined : statusFilter.value === "true",
+    };
+
+    const res: any = await assignmentSvc.getMentorAssignments(params);
+    const data = res?.data;
+
+    if (data?.items) {
+      assignments.value = data.items;
+      paginationMeta.value = data.meta;
+    } else if (Array.isArray(data)) {
+      assignments.value = data;
+      paginationMeta.value = {
+        totalData: data.length,
+        totalPage: 1,
+        currentPage: 1,
+        pageSize: data.length,
+      };
+    } else {
+      assignments.value = [];
+    }
   } catch (error) {
     console.error("Failed to load assignments", error);
   } finally {
     isLoading.value = false;
   }
+}
+
+// Watch filters
+watch([search, statusFilter, mentorFilter, studentFilter, pageNumber], () => {
+  loadAssignments();
+});
+
+function handlePageChange(page: number) {
+  pageNumber.value = page;
 }
 
 async function handleAssign() {
@@ -85,25 +146,70 @@ async function handleAssign() {
 
   try {
     isSubmitting.value = true;
-    await assignmentSvc.assignMentor({
+    swal.loading("Memproses...");
+
+    const payload = {
       studentId: form.value.studentId,
       mentorId: form.value.mentorId,
-    });
+    };
 
-    swal.success("Berhasil", "Mentor berhasil ditugaskan");
+    if (selectedAssignment.value) {
+      await assignmentSvc.updateMentorAssignment(selectedAssignment.value.id, payload);
+      swal.success("Berhasil", "Penugasan mentor berhasil diperbarui");
+    } else {
+      await assignmentSvc.assignMentor(payload);
+      swal.success("Berhasil", "Mentor berhasil ditugaskan");
+    }
+
     showAssignModal.value = false;
-    form.value = { studentId: null, mentorId: null };
+    resetForm();
 
     // Refresh data
     await Promise.all([loadAssignments(), loadStudents()]);
   } catch (error: any) {
     swal.error(
       "Gagal",
-      error?.response?._data?.message || "Gagal menugaskan mentor",
+      error?.response?._data?.message || "Gagal memproses penugasan mentor",
     );
   } finally {
     isSubmitting.value = false;
   }
+}
+
+function resetForm() {
+  form.value = { studentId: null, mentorId: null };
+  selectedAssignment.value = null;
+}
+
+function openAssignModal() {
+  resetForm();
+  showAssignModal.value = true;
+}
+
+function openEditModal(item: any) {
+  selectedAssignment.value = item;
+
+  // Pastikan mahasiswa ada di daftar agar label muncul di autocomplete
+  if (!students.value.find((s) => s.id === item.studentId)) {
+    students.value.push({
+      id: item.studentId,
+      name: item.studentName,
+    });
+  }
+
+  // Pastikan mentor ada di daftar
+  if (!mentors.value.find((m) => m.id === item.mentorId)) {
+    mentors.value.push({
+      id: item.mentorId,
+      name: item.mentorName,
+    });
+  }
+
+  form.value = {
+    studentId: item.studentId,
+    mentorId: item.mentorId,
+  };
+  showAssignModal.value = true;
 }
 
 onMounted(() => {
@@ -129,14 +235,6 @@ onMounted(() => {
           Penugasan Mentor
         </h1>
       </div>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-        @click="showAssignModal = true"
-      >
-        <UiIcon name="mdi-plus" size="md" />
-        <span>Tugaskan Mentor</span>
-      </button>
     </div>
 
     <!-- Stats or Info (Optional) -->
@@ -159,6 +257,61 @@ onMounted(() => {
         </div>
       </div>
       <!-- Add more stats as needed -->
+    </div>
+
+    <!-- Filters Bar -->
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
+    >
+      <div class="lg:col-span-2">
+        <UiInput
+          v-model="searchQuery"
+          placeholder="Cari nama mahasiswa atau mentor..."
+          icon="mdi-magnify"
+        />
+      </div>
+      <div>
+        <UiSelect
+          v-model="mentorFilter"
+          placeholder="Filter Mentor"
+          :options="[
+            { label: 'Semua Mentor', value: '' },
+            ...mentors.map((m) => ({ label: m.name, value: m.id })),
+          ]"
+        />
+      </div>
+      <div>
+        <UiSelect
+          v-model="statusFilter"
+          placeholder="Status"
+          :options="[
+            { label: 'Semua Status', value: '' },
+            { label: 'Aktif', value: 'true' },
+            { label: 'Non-aktif', value: 'false' },
+          ]"
+        />
+      </div>
+
+      <button
+        @click="loadAssignments"
+        class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        <UiIcon
+          name="mdi-refresh"
+          :class="{ 'animate-spin': isLoading }"
+          size="sm"
+          class="mr-2"
+        />
+        Refresh
+      </button>
+      <button
+        type="button"
+        class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
+        @click="openAssignModal"
+      >
+        <UiIcon name="mdi-plus" size="md" />
+        <span>Tugaskan Mentor</span>
+      </button>
     </div>
 
     <!-- Table Content -->
@@ -198,13 +351,18 @@ onMounted(() => {
               >
                 Status
               </th>
+              <th
+                class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
+              >
+                Aksi
+              </th>
             </tr>
           </thead>
           <tbody
             class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900"
           >
             <tr v-if="isLoading">
-              <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
                 <div class="flex flex-col items-center gap-2">
                   <UiSpinner size="lg" />
                   <span>Memuat data riwayat...</span>
@@ -212,7 +370,7 @@ onMounted(() => {
               </td>
             </tr>
             <tr v-else-if="assignments.length === 0">
-              <td colspan="4" class="px-6 py-12 text-center text-slate-500">
+              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
                 Belum ada data penugasan.
               </td>
             </tr>
@@ -249,14 +407,92 @@ onMounted(() => {
                   {{ item.isActive ? "Aktif" : "Non-aktif" }}
                 </UiBadge>
               </td>
+              <td class="px-6 py-4 text-right">
+                <button
+                  @click="openEditModal(item)"
+                  class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-primary-600 hover:bg-primary-50 transition-colors font-medium text-sm"
+                >
+                  <UiIcon name="mdi-pencil" size="sm" />
+                  <span>Edit</span>
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
+
+      <!-- Pagination Footer -->
+      <div
+        v-if="paginationMeta.totalPage > 1"
+        class="flex flex-col items-center justify-between gap-4 border-t border-slate-200 px-6 py-4 dark:border-slate-800 sm:flex-row"
+      >
+        <p class="text-sm text-slate-500 dark:text-slate-400">
+          Menampilkan
+          <span class="font-medium text-slate-900 dark:text-white">{{
+            assignments.length
+          }}</span>
+          dari
+          <span class="font-medium text-slate-900 dark:text-white">{{
+            paginationMeta.totalData
+          }}</span>
+          penugasan
+        </p>
+        <div class="flex items-center gap-2">
+          <button
+            type="button"
+            :disabled="pageNumber === 1 || isLoading"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            @click="handlePageChange(pageNumber - 1)"
+          >
+            <UiIcon name="mdi-chevron-left" size="sm" />
+          </button>
+
+          <div class="flex items-center gap-1">
+            <template v-for="p in paginationMeta.totalPage" :key="p">
+              <button
+                v-if="
+                  p === 1 ||
+                  p === paginationMeta.totalPage ||
+                  (p >= pageNumber - 1 && p <= pageNumber + 1)
+                "
+                type="button"
+                :class="[
+                  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition',
+                  p === pageNumber
+                    ? 'bg-primary-600 text-white'
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800',
+                ]"
+                @click="handlePageChange(p)"
+              >
+                {{ p }}
+              </button>
+              <span
+                v-else-if="
+                  (p === 2 && pageNumber > 3) ||
+                  (p === paginationMeta.totalPage - 1 &&
+                    pageNumber < paginationMeta.totalPage - 2)
+                "
+                class="px-1 text-slate-400"
+              >
+                ...
+              </span>
+            </template>
+          </div>
+
+          <button
+            type="button"
+            :disabled="pageNumber === paginationMeta.totalPage || isLoading"
+            class="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
+            @click="handlePageChange(pageNumber + 1)"
+          >
+            <UiIcon name="mdi-chevron-right" size="sm" />
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Assignment Modal -->
-    <UiModal v-model="showAssignModal" title="Tugaskan Mentor Baru" size="lg">
+    <UiModal v-model="showAssignModal" :title="selectedAssignment ? 'Edit Penugasan Mentor' : 'Tugaskan Mentor Baru'" size="lg">
       <div class="space-y-6">
         <p class="text-sm text-slate-500">
           Pilih mahasiswa yang sudah diterima dan tentukan mentor yang akan

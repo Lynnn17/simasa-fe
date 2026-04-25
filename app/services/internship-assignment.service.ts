@@ -14,10 +14,15 @@ const internshipAssignmentService = () => {
     return api.get(`${url}/mentor/${mentorId}/students`);
   }
 
+  async function updateMentorAssignment(id: string, data: { studentId: string; mentorId: string }) {
+    return api.put(`${url}/${id}`, data);
+  }
+
   return {
     assignMentor,
     getMentorAssignments,
     getStudentsByMentor,
+    updateMentorAssignment,
   };
 };
 
