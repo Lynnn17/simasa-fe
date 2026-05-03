@@ -112,6 +112,12 @@ async function loadMonitoringData() {
     isFirstLoad.value = false;
   }
 }
+const { onEvent } = useSocket();
+
+// Listen for monitoring updates from students
+onEvent("monitoring_update", () => {
+  refresh(); // Automatically refresh data without page reload
+});
 </script>
 
 <template>

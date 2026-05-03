@@ -32,7 +32,7 @@ type RegistrationRow = {
 
 const registrationSvc = internshipRegistrationService();
 const { t } = useTranslation();
-const swal = useSwal();
+const swalSvc = useSwal();
 const route = useRoute();
 const { hasPermission } = usePermission();
 
@@ -139,7 +139,7 @@ const alertRef = ref();
 
 async function handleStatusUpdate(item: any, status: string) {
   const isAccept = status === "accepted";
-  const result = await swal.confirm(
+  const result = await swalSvc.confirm(
     isAccept ? "Terima Pendaftaran?" : "Tolak Pendaftaran?",
     isAccept
       ? "Anda akan menerima pendaftar ini."
@@ -149,13 +149,13 @@ async function handleStatusUpdate(item: any, status: string) {
   if (!result.isConfirmed) return;
 
   try {
-    swal.loading("Memproses...");
+    swalSvc.loading("Memproses...");
     await registrationSvc.updateRegistrationStatus(String(item.id), status);
-    swal.success("Berhasil", "Status pendaftaran berhasil diperbarui.");
+    swalSvc.success("Berhasil", "Status pendaftaran berhasil diperbarui.");
     loadRegistrations();
     alertRef.value?.refresh();
   } catch (error: any) {
-    swal.error("Gagal", error?.message || "Gagal memperbarui status.");
+    swalSvc.error("Gagal", error?.message || "Gagal memperbarui status.");
   }
 }
 
@@ -179,6 +179,19 @@ function getCvUrl(row: RegistrationRow) {
   return `/api/files/${path.startsWith("/") ? path.slice(1) : path}`;
 }
 
+const { onEvent } = useSocket();
+
+// Listen for new registration notifications
+onEvent("new_notification", (data: any) => {
+  if (data.type === "registration") {
+    swalSvc.toast(data.message, "info");
+  }
+});
+
+// Listen for data refresh trigger
+onEvent("refresh_registrations", () => {
+  refresh(); // This calls the useFetch refresh function
+});
 </script>
 
 <template>
@@ -357,3 +370,5 @@ function getCvUrl(row: RegistrationRow) {
     </UiModal>
   </div>
 </template>
+
+<!-- Force re-parse -->

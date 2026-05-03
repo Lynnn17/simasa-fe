@@ -126,15 +126,27 @@ async function loadAssignments() {
   }
 }
 
+const registrationSvc = internshipRegistrationService();
+
+// Load only accepted students who are NOT yet assigned to a mentor
 async function loadStudents() {
   try {
-    const res: any = await userSvc.retrieveAll({ roleId: "HA02" });
-    const data = res?.data;
-    students.value = Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data)
-        ? data
-        : [];
+    // Get accepted registrations
+    const regRes: any = await registrationSvc.getAcceptedStudents();
+    const registrations = regRes?.data?.items || regRes?.data || [];
+
+    // Get existing assignments to filter out already-assigned students
+    const assignRes: any = await assignmentSvc.getMentorAssignments({ pageSize: 999 });
+    const assignments = assignRes?.data?.items || [];
+    const assignedStudentIds = new Set(assignments.map((a: any) => a.studentId));
+
+    // Only show students who are accepted but NOT yet assigned
+    students.value = registrations
+      .filter((r: any) => !assignedStudentIds.has(r.userId || r.studentId || r.id))
+      .map((r: any) => ({
+        id: r.userId || r.studentId || r.id,
+        name: r.fullName || r.name || r.user?.name || '-',
+      }));
   } catch (error) {
     console.error("Failed to load students", error);
   }
@@ -153,6 +165,8 @@ async function loadMentors() {
     console.error("Failed to load mentors", error);
   }
 }
+
+const noMentorsAvailable = computed(() => mentors.value.length === 0);
 
 async function handleAssign() {
   if (!form.value.studentId || !form.value.mentorId) {
@@ -268,6 +282,18 @@ onMounted(() => {
       >
         Penugasan Mentor
       </h1>
+    </div>
+
+    <!-- Warning: No Mentors -->
+    <div
+      v-if="noMentorsAvailable"
+      class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200"
+    >
+      <UiIcon name="mdi-alert-circle-outline" size="lg" />
+      <div>
+        <p class="font-semibold">Belum ada data Mentor aktif dalam sistem</p>
+        <p class="text-sm">Silakan tambahkan data Mentor terlebih dahulu sebelum melakukan penugasan.</p>
+      </div>
     </div>
 
     <!-- Stats -->
