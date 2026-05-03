@@ -20,8 +20,7 @@
       <UiAppLogo 
         class="hidden lg:flex"
         position="absolute-top-left" 
-        image="/images/logo-ajinomoto.webp" 
-        :logo-size="90" />
+        :logo-size="100" />
 
       <!-- Image -->
       <div class="relative z-10 mb-12">
@@ -102,7 +101,6 @@
           <!-- Mobile Logo (Shown only on small screens) -->
           <div class="lg:hidden flex justify-center mb-8">
             <UiAppLogo 
-              image="/images/logo-ajinomoto.webp" 
               :logo-size="80" 
             />
           </div>
@@ -182,7 +180,7 @@
           <p
             class="mt-10 text-center text-sm text-slate-600 dark:text-slate-400"
           >
-            Copyright © 2026 Gate System Ajinomoto. All rights reserved.
+            {{ $t('login.copyright') }}
           </p>
         </div>
       </div>
@@ -259,7 +257,18 @@ const handleSubmit = async () => {
 
   const result = await authStore.login(form.username, form.password);
   if (result.success) {
-    navigateTo("/dashboard", { external: true });
+    const roleId = authStore.user?.roleId;
+    let target = "/dashboard";
+
+    if (roleId === "HA03") {
+      target = "/hrd/dashboard";
+    } else if (roleId === "HA04") {
+      target = "/internship/logbooks/mentor";
+    } else if (roleId === "HA02") {
+      target = "/internship/logbooks/student";
+    }
+
+    navigateTo(target, { external: true });
   } else {
     swal.toast(result.error || "Login gagal. Silakan coba lagi.", "error");
   }

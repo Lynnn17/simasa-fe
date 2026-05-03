@@ -6,8 +6,13 @@ const hrdService = () => {
     return api.get(`${url}/monitoring`, { params });
   }
 
+  async function getStudentQuickView(studentId: string) {
+    return api.get(`${url}/student-detail/${studentId}`);
+  }
+
   return {
     getMonitoringData,
+    getStudentQuickView,
   };
 };
 

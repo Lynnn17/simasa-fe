@@ -2,7 +2,7 @@ const internshipAssignmentService = () => {
   const url = "/internship/mentor-assignment";
   const api = useApi();
 
-  async function assignMentor(data: { studentId: string; mentorId: string }) {
+  async function assignMentor(data: { studentId: string; mentorId: string; force?: boolean }) {
     return api.post(url, data);
   }
 

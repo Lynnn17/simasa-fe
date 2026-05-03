@@ -36,7 +36,7 @@ const emit = defineEmits<{
 }>();
 
 // Use vee-validate's form management
-const { handleSubmit, resetForm, values, meta, errors, setFieldError, validate } = useForm({
+const { handleSubmit, resetForm, values, meta, errors, setFieldError, validate, validateField, setFieldValue } = useForm({
   validationSchema: props.validationSchema,
   initialValues: props.initialValues,
   validateOnMount: props.validateOnMount,
@@ -77,6 +77,8 @@ const resetValidation = () => {
 // Expose methods to parent
 defineExpose({
   validate: validateForm,
+  validateField,
+  setFieldValue,
   reset,
   resetValidation,
   values,

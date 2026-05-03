@@ -26,8 +26,19 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const hasToken = !!authStore.token || !!tokenCookie.value;
     const isAuthenticated = authStore.isAuthenticated && hasToken;
 
-    if (isAuthenticated && to.path === "/login") {
-        return navigateTo("/", { external: true });
+    if (isAuthenticated && (to.path === "/login" || to.path === "/")) {
+        const roleId = authStore.user?.roleId;
+        let target = "/";
+
+        if (roleId === "HA03") {
+            target = "/hrd/dashboard";
+        } else if (roleId === "HA04") {
+            target = "/internship/logbooks/mentor";
+        } else if (roleId === "HA02") {
+            target = "/internship/logbooks/student";
+        }
+        
+        return navigateTo(target, { external: true });
     }
 
     if (publicRoutes.includes(to.path)) {

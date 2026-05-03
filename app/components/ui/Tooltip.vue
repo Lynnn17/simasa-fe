@@ -1,34 +1,37 @@
 <template>
-  <div 
-    ref="triggerRef"
-    class="inline-block"
-    :class="containerClass"
-    @mouseenter="showTooltip"
-    @mouseleave="hideTooltip"
-  >
-    <slot />
+  <div class="tooltip-container inline-block">
+    <div 
+      ref="triggerRef"
+      class="inline-block"
+      :class="containerClass"
+      @mouseenter="showTooltip"
+      @mouseleave="hideTooltip"
+    >
+      <slot />
+    </div>
+    
+    <Teleport to="body">
+      <Transition name="tooltip">
+        <div
+          v-if="isVisible && text"
+          ref="tooltipRef"
+          :style="tooltipStyle"
+          class="fixed px-2 py-1 text-xs font-medium text-white bg-slate-800 rounded shadow-lg whitespace-nowrap z-[9999] pointer-events-none"
+        >
+          {{ text }}
+          <!-- Arrow -->
+          <div 
+            :class="[
+              'absolute w-2 h-2 bg-slate-800 rotate-45',
+              arrowClass
+            ]"
+          />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
-  
-  <Teleport to="body">
-    <Transition name="tooltip">
-      <div
-        v-if="isVisible && text"
-        ref="tooltipRef"
-        :style="tooltipStyle"
-        class="fixed px-2 py-1 text-xs font-medium text-white bg-slate-800 rounded shadow-lg whitespace-nowrap z-[9999] pointer-events-none"
-      >
-        {{ text }}
-        <!-- Arrow -->
-        <div 
-          :class="[
-            'absolute w-2 h-2 bg-slate-800 rotate-45',
-            arrowClass
-          ]"
-        />
-      </div>
-    </Transition>
-  </Teleport>
 </template>
+
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'

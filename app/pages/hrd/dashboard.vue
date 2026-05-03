@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import hrdService from "~/services/hrd.service";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 definePageMeta({
   layout: "admin",
@@ -7,218 +9,233 @@ definePageMeta({
 });
 
 const hrdSvc = hrdService();
-const swal = useSwal();
+const { t } = useTranslation();
+const route = useRoute();
 
-const monitoringData = ref<any[]>([]);
 const isLoading = ref(false);
-const searchQuery = ref("");
-const search = ref("");
-
-async function loadMonitoringData() {
-  isLoading.value = true;
-  try {
-    const res: any = await hrdSvc.getMonitoringData({
-      search: search.value,
-    });
-    monitoringData.value = res?.data || [];
-  } catch (error) {
-    console.error("Failed to load monitoring data", error);
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-// Debounce search
-let searchTimeout: any;
-watch(searchQuery, (val) => {
-  clearTimeout(searchTimeout);
-  searchTimeout = setTimeout(() => {
-    search.value = val;
-    loadMonitoringData();
-  }, 500);
+const tableData = ref({
+  items: [],
+  meta: { totalItems: 0 },
 });
+
+const headers = computed(() => [
+  { key: "studentName", title: "Mahasiswa", sortable: true },
+  { key: "university", title: "Asal Kampus", sortable: true },
+  { key: "mentorName", title: "Mentor", sortable: true },
+  { key: "attendanceStatus", title: "Kehadiran", align: "center" },
+  { key: "logbookStatus", title: "Status Logbook", align: "center" },
+]);
+
+const filterSchema = computed(() => [
+  {
+    name: "date",
+    type: "date" as const,
+    placeholder: "Pilih Tanggal",
+    default: format(new Date(), "yyyy-MM-dd"),
+    colMd: 4,
+  },
+  {
+    name: "q",
+    type: "search" as const,
+    placeholder: "Cari mahasiswa...",
+    colMd: 8,
+  },
+]);
+
+
+const getAttendanceVariant = (status: string) => {
+  switch (status) {
+    case "Hadir":
+      return "success"; // Hijau
+    case "Tidak Hadir":
+    case "Izin":
+    case "Sakit":
+      return "danger"; // Merah
+    case "Pending":
+    case "Belum Tercatat":
+      return "warning"; // Kuning
+    default:
+      return "neutral";
+  }
+};
+
+const getLogbookVariant = (status: string) => {
+  const s = status?.toLowerCase();
+  if (["submitted", "already filled", "sudah mengisi"].includes(s))
+    return "success"; // Hijau
+  if (["pending", "belum mengisi"].includes(s)) return "warning"; // Kuning
+  if (["late", "terlambat"].includes(s)) return "danger"; // Merah
+  return "neutral";
+};
+
+const formattedDisplayDate = computed(() => {
+  const dateStr =
+    (route.query.date as string) || format(new Date(), "yyyy-MM-dd");
+  try {
+    return format(new Date(dateStr), "dd MMMM yyyy", { locale: id });
+  } catch (e) {
+    return dateStr;
+  }
+});
+
+// Quick View Modal
+const showQuickView = ref(false);
+const selectedStudentId = ref<string | null>(null);
+const isFirstLoad = ref(true);
+
+const openQuickView = (studentId: string) => {
+  selectedStudentId.value = studentId;
+  showQuickView.value = true;
+};
 
 onMounted(() => {
   loadMonitoringData();
 });
 
-function getAttendanceVariant(status: string) {
-  switch (status) {
-    case "Hadir":
-      return "success";
-    case "Tidak Hadir":
-      return "danger";
-    case "Belum Tercatat":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-}
-
-function getLogbookStatus(item: any) {
-  if (item.logbookStatus) return "Submitted";
-  return item.attendanceStatus === "Belum Tercatat" ? "Pending" : "Late";
-}
-
-function getLogbookVariant(status: string) {
-  switch (status) {
-    case "Submitted":
-      return "success";
-    case "Pending":
-      return "warning";
-    case "Late":
-      return "danger";
-    default:
-      return "neutral";
+async function loadMonitoringData() {
+  const { q, date } = route.query;
+  isLoading.value = true;
+  try {
+    const res: any = await hrdSvc.getMonitoringData({
+      search: q || "",
+      date: date || format(new Date(), "yyyy-MM-dd"),
+    });
+    const items = res?.data || [];
+    tableData.value = {
+      items,
+      meta: { totalItems: items.length },
+    };
+  } catch (error) {
+    console.error("Failed to load monitoring data", error);
+  } finally {
+    isLoading.value = false;
+    isFirstLoad.value = false;
   }
 }
 </script>
 
 <template>
   <div class="space-y-6">
+    <!-- Notifications -->
+    <InternshipPendingRegistrationAlert />
+
     <!-- Header -->
-    <div
-      class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
-    >
-      <div>
-        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-          HRD Monitoring
-        </p>
-        <h1
-          class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
-        >
-          Dashboard Monitoring Harian
-        </h1>
-      </div>
-      <div class="flex items-center gap-2">
-        <div class="relative w-full sm:w-64">
-          <UiInput
-            v-model="searchQuery"
-            placeholder="Cari mahasiswa..."
-            icon="mdi-magnify"
-          />
-        </div>
-        <button
-          @click="loadMonitoringData"
-          class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          <UiIcon
-            name="mdi-refresh"
-            :class="{ 'animate-spin': isLoading }"
-            size="sm"
-            class="mr-2"
-          />
-          Refresh
-        </button>
-      </div>
+
+    <div class="flex flex-col gap-1">
+      <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
+        HRD Monitoring
+      </p>
+      <h1
+        class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
+      >
+        Monitoring Harian
+        <span class="text-primary-600 dark:text-primary-400">{{
+          formattedDisplayDate
+        }}</span>
+      </h1>
     </div>
+
+    <!-- Summary Stats (Optional but would look premium) -->
+    <!-- ... can add later ... -->
 
     <!-- Monitoring Table -->
-    <div
-      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
+    <TableList
+      v-if="tableData.items.length > 0 || isLoading || isFirstLoad"
+      :showHeader="false"
+      :headers="headers"
+      :tableData="tableData"
+      :loading="isLoading"
+      :filterSchema="filterSchema"
+      @fetchData="loadMonitoringData"
     >
-      <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-        <h3 class="font-semibold text-slate-900 dark:text-white">
-          Rekapitulasi Hari Ini
+      <template v-slot:[`item.studentName`]="{ item }">
+        <button
+          @click="openQuickView(item.studentId)"
+          class="font-medium text-slate-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors text-left group"
+        >
+          <span
+            class="border-b border-transparent group-hover:border-primary-500 transition-all"
+          >
+            {{ item.studentName }}
+          </span>
+          <i
+            class="mdi mdi-information-outline ml-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+          ></i>
+        </button>
+      </template>
+
+      <template v-slot:[`item.mentorName`]="{ value }">
+        <div class="flex items-center gap-2">
+          <div
+            class="h-7 w-7 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center text-[10px] font-bold text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-800"
+          >
+            {{ (value || "??").substring(0, 2).toUpperCase() }}
+          </div>
+          <span
+            class="text-sm font-medium"
+            :class="
+              value
+                ? 'text-slate-700 dark:text-slate-300'
+                : 'text-slate-400 italic'
+            "
+          >
+            {{ value || "Belum ditugaskan" }}
+          </span>
+        </div>
+      </template>
+
+      <template v-slot:[`item.attendanceStatus`]="{ value }">
+        <UiBadge :variant="getAttendanceVariant(value)">
+          {{ value }}
+        </UiBadge>
+      </template>
+
+      <template v-slot:[`item.logbookStatus`]="{ value }">
+        <UiBadge :variant="getLogbookVariant(value)">
+          {{ value || "Pending" }}
+        </UiBadge>
+      </template>
+    </TableList>
+
+    <!-- Empty State -->
+    <div
+      v-else
+      class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 flex flex-col items-center text-center space-y-6 shadow-sm"
+    >
+      <div
+        class="h-24 w-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-700"
+      >
+        <i class="mdi mdi-account-search-outline text-6xl"></i>
+      </div>
+      <div class="max-w-md">
+        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
+          Tidak Ada Mahasiswa Magang Aktif
         </h3>
-        <p class="text-sm text-slate-500">
-          Pemantauan kehadiran dan pengisian logbook mahasiswa secara real-time.
+        <p class="text-slate-500 dark:text-slate-400 mt-2">
+          Saat ini belum ada mahasiswa yang terdaftar atau aktif dalam masa
+          magang pada tanggal ini. Silakan periksa pendaftaran baru atau
+          tugaskan mentor untuk memulai.
         </p>
       </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full divide-y divide-slate-200 dark:divide-slate-800">
-          <thead class="bg-slate-50 dark:bg-slate-800/60">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Mahasiswa
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Asal Kampus
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Mentor
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Kehadiran
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Status Logbook
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900"
-          >
-            <tr v-if="isLoading">
-              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                <div class="flex flex-col items-center gap-2">
-                  <UiSpinner size="lg" />
-                  <span>Memuat data monitoring...</span>
-                </div>
-              </td>
-            </tr>
-            <tr v-else-if="monitoringData.length === 0">
-              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                Belum ada data mahasiswa aktif.
-              </td>
-            </tr>
-            <tr
-              v-else
-              v-for="item in monitoringData"
-              :key="item.studentId"
-              class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            >
-              <td class="px-6 py-4">
-                <div class="font-medium text-slate-900 dark:text-white">
-                  {{ item.studentName }}
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="text-sm text-slate-600 dark:text-slate-400">
-                  {{ item.university }}
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <div class="flex items-center gap-2">
-                  <div
-                    class="h-8 w-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600"
-                  >
-                    {{
-                      (item.mentorName || "??").substring(0, 2).toUpperCase()
-                    }}
-                  </div>
-                  <span
-                    class="text-sm font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    {{ item.mentorName || "Belum ditugaskan" }}
-                  </span>
-                </div>
-              </td>
-              <td class="px-6 py-4">
-                <UiBadge :variant="getAttendanceVariant(item.attendanceStatus)">
-                  {{ item.attendanceStatus }}
-                </UiBadge>
-              </td>
-              <td class="px-6 py-4">
-                <UiBadge :variant="getLogbookVariant(getLogbookStatus(item))">
-                  {{ getLogbookStatus(item) }}
-                </UiBadge>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <NuxtLink to="/internship/registrations">
+          <UiButton variant="primary" class="!px-8">
+            <i class="mdi mdi-account-plus-outline mr-2"></i>
+            Kelola Pendaftaran
+          </UiButton>
+        </NuxtLink>
+        <UiButton variant="ghost" @click="loadMonitoringData">
+          <i class="mdi mdi-refresh mr-2"></i>
+          Refresh Data
+        </UiButton>
       </div>
     </div>
+
+    <!-- Modals -->
+    <PagesHrdStudentQuickViewModal
+      v-model="showQuickView"
+      :student-id="selectedStudentId"
+      @finished="loadMonitoringData"
+    />
   </div>
 </template>

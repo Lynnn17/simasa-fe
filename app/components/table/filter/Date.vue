@@ -35,7 +35,7 @@ const handleChange = (value: string | null) => {
     >
       {{ field.label }}
     </label>
-    <UiDatePicker
+    <UiDateOnlyPicker
       :model-value="modelValue"
       :placeholder="field.placeholder || 'Pilih tanggal'"
       :disabled="disabled"

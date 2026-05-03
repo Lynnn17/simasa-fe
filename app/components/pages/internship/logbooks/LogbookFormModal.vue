@@ -26,9 +26,12 @@ const close = () => {
 // Validation Schema
 const schema = toTypedSchema(
   z.object({
-    logDate: z.string().or(z.date()).refine((val) => val !== null && val !== '', {
-      message: "Tanggal wajib diisi",
-    }),
+    logDate: z
+      .string()
+      .or(z.date())
+      .refine((val) => val !== null && val !== "", {
+        message: "Tanggal wajib diisi",
+      }),
     activities: z.string().min(10, "Aktivitas minimal 10 karakter"),
     blockers: z
       .string()
@@ -37,7 +40,10 @@ const schema = toTypedSchema(
         "Kendala wajib diisi, minimal 5 karakter (tulis 'Tidak ada' jika tidak ada)",
       ),
     planTomorrow: z.string().min(10, "Rencana besok minimal 10 karakter"),
-    evidenceURL: z.string().url("Format URL tidak valid").or(z.literal("")).optional(),
+    evidenceURL: z
+      .string()
+      .min(1, "Link bukti wajib diisi")
+      .url("Format URL tidak valid"),
   }),
 );
 
@@ -45,7 +51,7 @@ const { handleSubmit, errors, defineField, resetForm, setFieldValue } = useForm(
   {
     validationSchema: schema,
     initialValues: {
-      logDate: new Date().toISOString().split('T')[0],
+      logDate: new Date().toISOString().split("T")[0],
       activities: "",
       blockers: "",
       planTomorrow: "",
@@ -59,29 +65,34 @@ const [blockers] = defineField("blockers");
 const [planTomorrow] = defineField("planTomorrow");
 const [evidenceURL] = defineField("evidenceURL");
 
-const logDate = ref(new Date().toISOString().split('T')[0]);
+const logDate = ref(new Date().toISOString().split("T")[0]);
 watch(logDate, (val) => {
   setFieldValue("logDate", val);
 });
 
 // Reset or populate form when modal opens
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
-    if (props.logbook) {
-      // Edit Mode
-      setFieldValue("logDate", props.logbook.logDate);
-      setFieldValue("activities", props.logbook.activities);
-      setFieldValue("blockers", props.logbook.blockers);
-      setFieldValue("planTomorrow", props.logbook.planTomorrow);
-      setFieldValue("evidenceURL", props.logbook.evidenceURL || "");
-      logDate.value = new Date(props.logbook.logDate).toISOString().split('T')[0];
-    } else {
-      // Create Mode
-      resetForm();
-      logDate.value = new Date().toISOString().split('T')[0];
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      if (props.logbook) {
+        // Edit Mode
+        setFieldValue("logDate", props.logbook.logDate);
+        setFieldValue("activities", props.logbook.activities);
+        setFieldValue("blockers", props.logbook.blockers);
+        setFieldValue("planTomorrow", props.logbook.planTomorrow);
+        setFieldValue("evidenceURL", props.logbook.evidenceURL || "");
+        logDate.value = new Date(props.logbook.logDate)
+          .toISOString()
+          .split("T")[0];
+      } else {
+        // Create Mode
+        resetForm();
+        logDate.value = new Date().toISOString().split("T")[0];
+      }
     }
-  }
-});
+  },
+);
 
 const onSubmit = handleSubmit(async (values) => {
   try {
@@ -89,7 +100,10 @@ const onSubmit = handleSubmit(async (values) => {
 
     const payload = {
       ...values,
-      logDate: typeof values.logDate === 'string' ? values.logDate : values.logDate.toISOString().split('T')[0],
+      logDate:
+        typeof values.logDate === "string"
+          ? values.logDate
+          : values.logDate.toISOString().split("T")[0],
     };
 
     if (props.logbook?.id) {
@@ -127,11 +141,10 @@ const onSubmit = handleSubmit(async (values) => {
         >
           Tanggal Logbook <span class="text-red-500">*</span>
         </label>
-        <UiDatePicker
+        <UiDateOnlyPicker
           v-model="logDate"
-          mode="date"
-          auto-apply
           placeholder="Pilih Tanggal"
+          :error="errors.logDate"
         />
         <p v-if="errors.logDate" class="text-sm text-red-500">
           {{ errors.logDate }}
@@ -203,7 +216,7 @@ const onSubmit = handleSubmit(async (values) => {
         <label
           class="block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
-          Link Bukti (Evidence URL)
+          Link Bukti (Evidence URL) <span class="text-red-500">*</span>
         </label>
         <UiInput
           v-model="evidenceURL"
@@ -215,7 +228,9 @@ const onSubmit = handleSubmit(async (values) => {
         </p>
       </div>
 
-      <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 mt-6 pt-6">
+      <div
+        class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 mt-6 pt-6"
+      >
         <button
           type="button"
           @click="close"
@@ -229,7 +244,13 @@ const onSubmit = handleSubmit(async (values) => {
           class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-50"
         >
           <UiSpinner v-if="isSubmitting" size="sm" />
-          <span>{{ isSubmitting ? "Menyimpan..." : (props.logbook ? "Simpan Perubahan" : "Submit Logbook") }}</span>
+          <span>{{
+            isSubmitting
+              ? "Menyimpan..."
+              : props.logbook
+                ? "Simpan Perubahan"
+                : "Submit Logbook"
+          }}</span>
         </button>
       </div>
     </form>

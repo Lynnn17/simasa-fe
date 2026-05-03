@@ -7,7 +7,10 @@ const userRole = computed(() => authStore.getUserRole);
 const userName = computed(() => authStore.user?.name || "User");
 
 // Role Checks
-const isStudent = computed(() => userRole.value === 'HA02');
+const isStudent = computed(() => userRole.value === 'HA02' || userRole.value === 'Mahasiswa');
+const isHRD = computed(() => userRole.value === 'HA03' || userRole.value === 'HRD');
+const isMentor = computed(() => userRole.value === 'HA04' || userRole.value === 'Mentor');
+const isSuperadmin = computed(() => userRole.value === 'HA01' || userRole.value === 'Superadmin');
 
 const logbookService = internshipLogbookService();
 const hasFilledLogbookToday = ref(true);
@@ -60,7 +63,7 @@ onMounted(() => {
         <div>
           <h1 class="text-3xl font-bold">Selamat Datang, {{ userName }}!</h1>
           <p class="mt-2 text-primary-100 opacity-90 max-w-md">
-            Anda login sebagai <span class="font-bold border-b-2 border-primary-400 pb-0.5">{{ userRole === 'HA01' ? 'Superadmin' : userRole === 'HA02' ? 'Mahasiswa' : userRole === 'HA03' ? 'HRD' : 'Mentor' }}</span>. 
+            Anda login sebagai <span class="font-bold border-b-2 border-primary-400 pb-0.5">{{ isSuperadmin ? 'Superadmin' : isStudent ? 'Mahasiswa' : isHRD ? 'HRD' : 'Mentor' }}</span>. 
             Semoga hari Anda menyenangkan dan produktif hari ini.
           </p>
           <div class="mt-6 flex items-center gap-3">
@@ -117,6 +120,56 @@ onMounted(() => {
         </NuxtLink>
       </div>
     </div>
+
+    <!-- Mentor Summary Badges -->
+    <div v-if="isMentor" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+            <UiIcon name="mdi-account-group" size="sm" />
+          </div>
+          <div>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Total Bimbingan</p>
+            <p class="text-lg font-bold text-slate-900 dark:text-white">12 Peserta</p>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-amber-50 dark:bg-amber-900/20 flex items-center justify-center text-amber-600 dark:text-amber-400">
+            <UiIcon name="mdi-file-clock" size="sm" />
+          </div>
+          <div>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Tugas Submitted</p>
+            <p class="text-lg font-bold text-slate-900 dark:text-white">5 Menunggu</p>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+            <UiIcon name="mdi-check-all" size="sm" />
+          </div>
+          <div>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sudah Dinilai</p>
+            <p class="text-lg font-bold text-slate-900 dark:text-white">18 Selesai</p>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 rounded-2xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center text-red-600 dark:text-red-400">
+            <UiIcon name="mdi-book-remove" size="sm" />
+          </div>
+          <div>
+            <p class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Belum Isi Logbook</p>
+            <p class="text-lg font-bold text-slate-900 dark:text-white">3 Mahasiswa</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 

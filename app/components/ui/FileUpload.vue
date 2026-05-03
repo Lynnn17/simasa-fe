@@ -332,100 +332,71 @@ defineExpose({
 </script>
 
 <template>
-  <div
-    :class="[
-      'border-2 border-dashed rounded-lg transition-all duration-200',
-      isDragging
-        ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-        : 'border-slate-300 dark:border-slate-600',
-      disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
-      variant === 'compact' ? 'p-4' : 'p-8',
-    ]"
-    @click="openFilePicker"
-    @drop="handleDrop"
-    @dragover="handleDragOver"
-    @dragleave="handleDragLeave"
-  >
-    <input
-      ref="fileInput"
-      type="file"
-      :accept="accept"
-      :multiple="multiple"
-      :disabled="disabled"
-      class="hidden"
-      @change="handleFileChange"
-    />
-
-    <!-- Empty State -->
-    <div v-if="!hasFile" class="text-center" @click.stop>
-      <i
-        :class="[
-          'mdi mdi-cloud-upload-outline',
-          variant === 'compact' ? 'text-3xl' : 'text-5xl',
-          'text-slate-400',
-        ]"
-      />
-      <p class="text-slate-600 dark:text-slate-400 mt-2">
-        {{ placeholderText }}
-      </p>
-      <UiButton
-        color="primary"
-        variant="outline"
-        :size="variant === 'compact' ? 'sm' : 'md'"
-        class="mt-3"
-        @click.stop="openFilePicker"
-      >
-        <i class="mdi mdi-upload mr-2" />
-        {{ $t("import.select_file") }}
-      </UiButton>
-      <p v-if="hintText" class="text-xs text-slate-400 mt-2">
-        {{ hintText }}
-      </p>
-    </div>
-
-    <!-- Single File Preview -->
+  <div class="w-full">
     <div
-      v-else-if="!multiple && selectedFile"
-      class="flex items-center justify-center gap-4"
-      @click.stop
+      :class="[
+        'border-2 border-dashed rounded-lg transition-all duration-200',
+        isDragging
+          ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+          : 'border-slate-300 dark:border-slate-600',
+        disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+        variant === 'compact' ? 'p-4' : 'p-8',
+      ]"
+      @click="openFilePicker"
+      @drop="handleDrop"
+      @dragover="handleDragOver"
+      @dragleave="handleDragLeave"
     >
-      <i :class="['text-4xl', getFileIcon(selectedFile)]" />
-      <div class="text-left">
-        <p class="font-medium text-slate-800 dark:text-slate-200">
-          {{ selectedFile.name }}
+      <input
+        ref="fileInput"
+        type="file"
+        :accept="accept"
+        :multiple="multiple"
+        :disabled="disabled"
+        class="hidden"
+        @change="handleFileChange"
+      />
+
+      <!-- Empty State -->
+      <div v-if="!hasFile" class="text-center" @click.stop>
+        <i
+          :class="[
+            'mdi mdi-cloud-upload-outline',
+            variant === 'compact' ? 'text-3xl' : 'text-5xl',
+            'text-slate-400',
+          ]"
+        />
+        <p class="text-slate-600 dark:text-slate-400 mt-2">
+          {{ placeholderText }}
         </p>
-        <p class="text-sm text-slate-500">
-          {{ formatFileSize(selectedFile.size) }}
+        <UiButton
+          color="primary"
+          variant="outline"
+          :size="variant === 'compact' ? 'sm' : 'md'"
+          class="mt-3"
+          @click.stop="openFilePicker"
+        >
+          <i class="mdi mdi-upload mr-2" />
+          {{ $t("import.select_file") }}
+        </UiButton>
+        <p v-if="hintText" class="text-xs text-slate-400 mt-2">
+          {{ hintText }}
         </p>
       </div>
-      <UiIconButton
-        icon="mdi-close"
-        size="sm"
-        color="red"
-        variant="ghost"
-        :tooltip="$t('Hapus')"
-        @click.stop="clearFile()"
-      />
-    </div>
 
-    <!-- Multiple Files Preview -->
-    <div
-      v-else-if="multiple && selectedFiles.length > 0"
-      class="space-y-2"
-      @click.stop
-    >
+      <!-- Single File Preview -->
       <div
-        v-for="(file, index) in selectedFiles"
-        :key="index"
-        class="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+        v-else-if="!multiple && selectedFile"
+        class="flex items-center justify-center gap-4"
+        @click.stop
       >
-        <i :class="['text-2xl', getFileIcon(file)]" />
-        <div class="flex-1 min-w-0">
-          <p class="font-medium text-slate-800 dark:text-slate-200 truncate">
-            {{ file.name }}
+        <i :class="['text-4xl', getFileIcon(selectedFile)]" />
+        <div class="text-left">
+          <p class="font-medium text-slate-800 dark:text-slate-200">
+            {{ selectedFile.name }}
           </p>
-          <p class="text-xs text-slate-500">
-            {{ formatFileSize(file.size) }}
+          <p class="text-sm text-slate-500">
+            {{ formatFileSize(selectedFile.size) }}
           </p>
         </div>
         <UiIconButton
@@ -433,21 +404,53 @@ defineExpose({
           size="sm"
           color="red"
           variant="ghost"
-          @click.stop="clearFile(index)"
+          :tooltip="$t('Hapus')"
+          @click.stop="clearFile()"
         />
       </div>
-      <UiButton
-        variant="outline"
-        size="sm"
-        class="w-full mt-2"
-        @click.stop="openFilePicker"
+
+      <!-- Multiple Files Preview -->
+      <div
+        v-else-if="multiple && selectedFiles.length > 0"
+        class="space-y-2"
+        @click.stop
       >
-        <i class="mdi mdi-plus mr-1" />
-        {{ $t("import.add_more") }}
-      </UiButton>
+        <div
+          v-for="(file, index) in selectedFiles"
+          :key="index"
+          class="flex items-center gap-3 p-2 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+        >
+          <i :class="['text-2xl', getFileIcon(file)]" />
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-slate-800 dark:text-slate-200 truncate">
+              {{ file.name }}
+            </p>
+            <p class="text-xs text-slate-500">
+              {{ formatFileSize(file.size) }}
+            </p>
+          </div>
+          <UiIconButton
+            icon="mdi-close"
+            size="sm"
+            color="red"
+            variant="ghost"
+            @click.stop="clearFile(index)"
+          />
+        </div>
+        <UiButton
+          variant="outline"
+          size="sm"
+          class="w-full mt-2"
+          @click.stop="openFilePicker"
+        >
+          <i class="mdi mdi-plus mr-1" />
+          {{ $t("import.add_more") }}
+        </UiButton>
+      </div>
     </div>
+    <p v-if="displayError" class="text-sm text-red-500 mt-1">
+      {{ displayError }}
+    </p>
   </div>
-  <p v-if="displayError" class="text-sm text-red-500">
-    {{ displayError }}
-  </p>
 </template>
+

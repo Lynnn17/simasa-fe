@@ -1,11 +1,11 @@
 export const appConfig = {
   head: {
-    title: "Greatclass LMS",
-    titleTemplate: '%s | Gate System Ajinomoto',
+    title: "SIMASA",
+    titleTemplate: '%s | Greatsoft Internship Portal',
     meta: [
       { charset: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { name: "description", content: "Gate System Ajinomoto" },
+      { name: "description", content: "Greatsoft Internship Portal" },
     ],
     link: [
       { rel: "icon", type: "image/x-icon", href: "/favicon.ico" },
