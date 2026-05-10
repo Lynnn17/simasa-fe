@@ -32,13 +32,21 @@ const internshipRegistrationService = () => {
     });
   }
 
+  async function getPendingRegistrations() {
+    return api.get(url + "/all", {
+      params: { status: "pending" },
+    });
+  }
+
   return {
     getRegistrations,
+    getPendingRegistrations,
     updateRegistrationStatus,
     register,
     getAcceptedStudents,
     getAcceptedStudentsAll,
   };
+
 };
 
 export default internshipRegistrationService;

@@ -5,17 +5,18 @@ import userService from "@/services/user.service";
 
 definePageMeta({
   layout: "admin",
-  permission: "ASSEMENT_MENTOR.VIEW", // Adjust permission as needed
+  permission: "ASSEMENT_MENTOR.VIEW",
 });
 
 useHead({
   title: "Penugasan Mentor",
 });
 
-const registrationSvc = internshipRegistrationService();
 const assignmentSvc = internshipAssignmentService();
 const userSvc = userService();
 const swal = useSwal();
+const route = useRoute();
+const { t } = useTranslation();
 
 // State
 const isLoading = ref(false);
@@ -24,33 +25,76 @@ const showAssignModal = ref(false);
 
 const students = ref<any[]>([]);
 const mentors = ref<any[]>([]);
-const assignments = ref<any[]>([]);
 const selectedAssignment = ref<any>(null);
 
-// Pagination & Filters
-const pageNumber = ref(1);
-const pageSize = ref(10);
-const searchQuery = ref("");
-const search = ref("");
-const statusFilter = ref("");
-const mentorFilter = ref("");
-const studentFilter = ref("");
-const paginationMeta = ref<any>({
-  totalData: 0,
-  totalPage: 0,
-  currentPage: 1,
-  pageSize: 10,
+const tableData = ref({
+  items: [],
+  meta: { totalItems: 0 },
 });
 
-// Debounce search
-watch(searchQuery, (val) => {
-  const timeout = setTimeout(() => {
-    if (val === searchQuery.value) {
-      search.value = val;
-    }
-  }, 500);
-  return () => clearTimeout(timeout);
-});
+const headers = computed(() => [
+  { key: "studentName", title: "Mahasiswa", sortable: true },
+  { key: "mentorName", title: "Mentor", sortable: true },
+  { key: "assignedAt", title: "Tanggal Penugasan", align: "center" },
+  { key: "status", title: "Status", align: "center" },
+  { key: "actions", title: "Aksi", align: "center", width: "10%" },
+]);
+
+const filterSchema = computed(() => [
+  {
+    name: "q",
+    type: "search" as const,
+    placeholder: "Cari mahasiswa...",
+    colMd: 4,
+  },
+  {
+    name: "mentorId",
+    type: "select" as const,
+    placeholder: "Filter Mentor",
+    items: "mentorOptions",
+    colMd: 4,
+  },
+  {
+    name: "status",
+    type: "select" as const,
+    placeholder: "Semua Status",
+    items: "statusOptions",
+    colMd: 4,
+  },
+]);
+
+const filterList = computed(() => ({
+  mentorOptions: [
+    { label: "Semua Mentor", value: "" },
+    ...mentors.value.map((m) => ({ label: m.name, value: m.id })),
+  ],
+  statusOptions: [
+    { label: "Semua Status", value: "" },
+    { label: "Aktif", value: "true" },
+    { label: "Non-aktif", value: "false" },
+  ],
+}));
+
+const actions = computed(() => [
+  {
+    key: "edit",
+    icon: "mdi-pencil",
+    color: "#0284c7",
+    tooltip: "Edit",
+    emit: "editItem",
+  },
+]);
+
+const actionToolbars = computed(() => [
+  {
+    key: "addItem",
+    icon: "mdi-plus-circle-outline",
+    color: "primary",
+    tooltip: "Tugaskan Mentor",
+    emit: "addItem",
+    type: "default" as const,
+  },
+]);
 
 // Form State
 const form = ref({
@@ -58,18 +102,51 @@ const form = ref({
   mentorId: null as string | null,
 });
 
-// Load Data
+async function loadAssignments() {
+  const { pageNumber, pageSize, q, status, mentorId } = route.query;
+  isLoading.value = true;
+  try {
+    const params = {
+      pageNumber: pageNumber || 1,
+      pageSize: pageSize || 10,
+      search: q || "",
+      mentorId: mentorId || "",
+      isActive: status || "",
+    };
+
+    const res: any = await assignmentSvc.getMentorAssignments(params);
+    tableData.value = {
+      items: res?.data?.items || [],
+      meta: res?.data?.meta || { totalItems: 0 },
+    };
+  } catch (error) {
+    console.error("Failed to load assignments", error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+const registrationSvc = internshipRegistrationService();
+
+// Load only accepted students who are NOT yet assigned to a mentor
 async function loadStudents() {
   try {
-    const res: any = await userSvc.retrieveAll({ roleId: "HA02" });
-    const data = res?.data;
-    students.value = Array.isArray(data?.items)
-      ? data.items
-      : Array.isArray(data)
-        ? data
-        : [];
+    // Get accepted registrations
+    const regRes: any = await registrationSvc.getAcceptedStudents();
+    const registrations = regRes?.data?.items || regRes?.data || [];
 
-    console.log("Loaded accepted students:", students.value);
+    // Get existing assignments to filter out already-assigned students
+    const assignRes: any = await assignmentSvc.getMentorAssignments({ pageSize: 999 });
+    const assignments = assignRes?.data?.items || [];
+    const assignedStudentIds = new Set(assignments.map((a: any) => a.studentId));
+
+    // Only show students who are accepted but NOT yet assigned
+    students.value = registrations
+      .filter((r: any) => !assignedStudentIds.has(r.userId || r.studentId || r.id))
+      .map((r: any) => ({
+        id: r.userId || r.studentId || r.id,
+        name: r.fullName || r.name || r.user?.name || '-',
+      }));
   } catch (error) {
     console.error("Failed to load students", error);
   }
@@ -84,59 +161,12 @@ async function loadMentors() {
       : Array.isArray(data)
         ? data
         : [];
-
-    console.log("Loaded mentors:", mentors.value);
   } catch (error) {
     console.error("Failed to load mentors", error);
   }
 }
 
-async function loadAssignments() {
-  isLoading.value = true;
-  try {
-    const params = {
-      pageNumber: pageNumber.value,
-      pageSize: pageSize.value,
-      search: search.value,
-      status: statusFilter.value,
-      mentorId: mentorFilter.value,
-      studentId: studentFilter.value,
-      isActive:
-        statusFilter.value === "" ? undefined : statusFilter.value === "true",
-    };
-
-    const res: any = await assignmentSvc.getMentorAssignments(params);
-    const data = res?.data;
-
-    if (data?.items) {
-      assignments.value = data.items;
-      paginationMeta.value = data.meta;
-    } else if (Array.isArray(data)) {
-      assignments.value = data;
-      paginationMeta.value = {
-        totalData: data.length,
-        totalPage: 1,
-        currentPage: 1,
-        pageSize: data.length,
-      };
-    } else {
-      assignments.value = [];
-    }
-  } catch (error) {
-    console.error("Failed to load assignments", error);
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-// Watch filters
-watch([search, statusFilter, mentorFilter, studentFilter, pageNumber], () => {
-  loadAssignments();
-});
-
-function handlePageChange(page: number) {
-  pageNumber.value = page;
-}
+const noMentorsAvailable = computed(() => mentors.value.length === 0);
 
 async function handleAssign() {
   if (!form.value.studentId || !form.value.mentorId) {
@@ -154,7 +184,10 @@ async function handleAssign() {
     };
 
     if (selectedAssignment.value) {
-      await assignmentSvc.updateMentorAssignment(selectedAssignment.value.id, payload);
+      await assignmentSvc.updateMentorAssignment(
+        selectedAssignment.value.id,
+        payload,
+      );
       swal.success("Berhasil", "Penugasan mentor berhasil diperbarui");
     } else {
       await assignmentSvc.assignMentor(payload);
@@ -162,53 +195,73 @@ async function handleAssign() {
     }
 
     showAssignModal.value = false;
-    resetForm();
-
-    // Refresh data
-    await Promise.all([loadAssignments(), loadStudents()]);
+    loadAssignments();
+    loadStudents();
   } catch (error: any) {
-    swal.error(
-      "Gagal",
-      error?.response?._data?.message || "Gagal memproses penugasan mentor",
-    );
+    const errorMsg =
+      error?.response?._data?.message ||
+      error?.response?._data?.error ||
+      "Gagal memproses penugasan mentor";
+
+    if (errorMsg === "student already has a mentor assignment") {
+      const confirm = await swal.confirm(
+        "Mahasiswa Sudah Memiliki Mentor",
+        "Mahasiswa ini sudah memiliki mentor aktif. Apakah Anda yakin ingin menggantinya dengan mentor baru?",
+        "warning",
+        "Ya, Ganti Mentor",
+      );
+
+      if (confirm) {
+        try {
+          isSubmitting.value = true;
+          swal.loading("Memperbarui Mentor...");
+          await assignmentSvc.assignMentor({ ...payload, force: true });
+          swal.success("Berhasil", "Mentor berhasil diperbarui");
+          showAssignModal.value = false;
+          loadAssignments();
+          loadStudents();
+          return;
+        } catch (innerError: any) {
+          swal.error(
+            "Gagal",
+            innerError?.response?._data?.message || "Gagal mengganti mentor",
+          );
+          return;
+        } finally {
+          isSubmitting.value = false;
+        }
+      }
+    }
+
+    swal.error("Gagal", errorMsg);
   } finally {
     isSubmitting.value = false;
   }
 }
 
-function resetForm() {
-  form.value = { studentId: null, mentorId: null };
-  selectedAssignment.value = null;
-}
-
-function openAssignModal() {
-  resetForm();
-  showAssignModal.value = true;
-}
-
 function openEditModal(item: any) {
   selectedAssignment.value = item;
 
-  // Pastikan mahasiswa ada di daftar agar label muncul di autocomplete
-  if (!students.value.find((s) => s.id === item.studentId)) {
-    students.value.push({
-      id: item.studentId,
-      name: item.studentName,
-    });
+  // Ensure the student exists in list for label
+  if (item.studentId && !students.value.find((s) => s.id === item.studentId)) {
+    students.value.push({ id: item.studentId, name: item.studentName });
   }
 
-  // Pastikan mentor ada di daftar
-  if (!mentors.value.find((m) => m.id === item.mentorId)) {
-    mentors.value.push({
-      id: item.mentorId,
-      name: item.mentorName,
-    });
+  // Ensure the mentor exists in list for label
+  if (item.mentorId && !mentors.value.find((m) => m.id === item.mentorId)) {
+    mentors.value.push({ id: item.mentorId, name: item.mentorName });
   }
 
   form.value = {
     studentId: item.studentId,
     mentorId: item.mentorId,
   };
+  showAssignModal.value = true;
+}
+
+function openAddModal() {
+  selectedAssignment.value = null;
+  form.value = { studentId: null, mentorId: null };
   showAssignModal.value = true;
 }
 
@@ -222,22 +275,28 @@ onMounted(() => {
 <template>
   <div class="space-y-6">
     <!-- Header -->
+    <div>
+      <p class="text-sm font-medium text-slate-500 dark:text-slate-400">HRD</p>
+      <h1
+        class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
+      >
+        Penugasan Mentor
+      </h1>
+    </div>
+
+    <!-- Warning: No Mentors -->
     <div
-      class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+      v-if="noMentorsAvailable"
+      class="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-200"
     >
+      <UiIcon name="mdi-alert-circle-outline" size="lg" />
       <div>
-        <p class="text-sm font-medium text-slate-500 dark:text-slate-400">
-          HRD
-        </p>
-        <h1
-          class="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
-        >
-          Penugasan Mentor
-        </h1>
+        <p class="font-semibold">Belum ada data Mentor aktif dalam sistem</p>
+        <p class="text-sm">Silakan tambahkan data Mentor terlebih dahulu sebelum melakukan penugasan.</p>
       </div>
     </div>
 
-    <!-- Stats or Info (Optional) -->
+    <!-- Stats -->
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <div
         class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
@@ -251,248 +310,63 @@ onMounted(() => {
           <div>
             <p class="text-sm font-medium text-slate-500">Total Penugasan</p>
             <p class="text-2xl font-semibold text-slate-900 dark:text-white">
-              {{ assignments.length }}
+              {{ tableData.meta.totalItems }}
             </p>
           </div>
         </div>
       </div>
-      <!-- Add more stats as needed -->
     </div>
 
-    <!-- Filters Bar -->
-    <div
-      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
+    <!-- Table -->
+    <TableList
+      title="Daftar Penugasan"
+      :headers="headers"
+      :tableData="tableData"
+      :loading="isLoading"
+      :filterSchema="filterSchema"
+      :filterList="filterList"
+      :actions="actions"
+      :actionToolbars="actionToolbars"
+      @fetchData="loadAssignments"
+      @addItem="openAddModal"
+      @editItem="openEditModal"
     >
-      <div class="lg:col-span-2">
-        <UiInput
-          v-model="searchQuery"
-          placeholder="Cari nama mahasiswa atau mentor..."
-          icon="mdi-magnify"
-        />
-      </div>
-      <div>
-        <UiSelect
-          v-model="mentorFilter"
-          placeholder="Filter Mentor"
-          :options="[
-            { label: 'Semua Mentor', value: '' },
-            ...mentors.map((m) => ({ label: m.name, value: m.id })),
-          ]"
-        />
-      </div>
-      <div>
-        <UiSelect
-          v-model="statusFilter"
-          placeholder="Status"
-          :options="[
-            { label: 'Semua Status', value: '' },
-            { label: 'Aktif', value: 'true' },
-            { label: 'Non-aktif', value: 'false' },
-          ]"
-        />
-      </div>
-
-      <button
-        @click="loadAssignments"
-        class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        <UiIcon
-          name="mdi-refresh"
-          :class="{ 'animate-spin': isLoading }"
-          size="sm"
-          class="mr-2"
-        />
-        Refresh
-      </button>
-      <button
-        type="button"
-        class="inline-flex items-center justify-center gap-2 rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100"
-        @click="openAssignModal"
-      >
-        <UiIcon name="mdi-plus" size="md" />
-        <span>Tugaskan Mentor</span>
-      </button>
-    </div>
-
-    <!-- Table Content -->
-    <div
-      class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900"
-    >
-      <div class="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-        <h3 class="font-semibold text-slate-900 dark:text-white">
-          Riwayat Penugasan
-        </h3>
-        <p class="text-sm text-slate-500">
-          Daftar mahasiswa yang sudah dipasangkan dengan mentor.
-        </p>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full divide-y divide-slate-200 dark:divide-slate-800">
-          <thead class="bg-slate-50 dark:bg-slate-800/60">
-            <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Mahasiswa
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Mentor
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Tanggal Penugasan
-              </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Status
-              </th>
-              <th
-                class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500"
-              >
-                Aksi
-              </th>
-            </tr>
-          </thead>
-          <tbody
-            class="divide-y divide-slate-200 bg-white dark:divide-slate-800 dark:bg-slate-900"
-          >
-            <tr v-if="isLoading">
-              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                <div class="flex flex-col items-center gap-2">
-                  <UiSpinner size="lg" />
-                  <span>Memuat data riwayat...</span>
-                </div>
-              </td>
-            </tr>
-            <tr v-else-if="assignments.length === 0">
-              <td colspan="5" class="px-6 py-12 text-center text-slate-500">
-                Belum ada data penugasan.
-              </td>
-            </tr>
-            <tr
-              v-else
-              v-for="item in assignments"
-              :key="item.id"
-              class="transition hover:bg-slate-50 dark:hover:bg-slate-800/50"
-            >
-              <td class="px-6 py-4">
-                <div class="font-medium text-slate-900 dark:text-white">
-                  {{ item.studentName }}
-                </div>
-                <div class="text-xs text-slate-500">
-                  {{ item.studentEmail || "-" }}
-                </div>
-              </td>
-              <td class="px-6 py-4 text-sm text-slate-700 dark:text-slate-300">
-                {{ item.mentorName }}
-              </td>
-              <td class="px-6 py-4 text-sm text-slate-500">
-                {{
-                  item.assignedAt
-                    ? new Date(item.assignedAt).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : "-"
-                }}
-              </td>
-              <td class="px-6 py-4">
-                <UiBadge :variant="item.isActive ? 'success' : 'neutral'">
-                  {{ item.isActive ? "Aktif" : "Non-aktif" }}
-                </UiBadge>
-              </td>
-              <td class="px-6 py-4 text-right">
-                <button
-                  @click="openEditModal(item)"
-                  class="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-primary-600 hover:bg-primary-50 transition-colors font-medium text-sm"
-                >
-                  <UiIcon name="mdi-pencil" size="sm" />
-                  <span>Edit</span>
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Pagination Footer -->
-      <div
-        v-if="paginationMeta.totalPage > 1"
-        class="flex flex-col items-center justify-between gap-4 border-t border-slate-200 px-6 py-4 dark:border-slate-800 sm:flex-row"
-      >
-        <p class="text-sm text-slate-500 dark:text-slate-400">
-          Menampilkan
-          <span class="font-medium text-slate-900 dark:text-white">{{
-            assignments.length
-          }}</span>
-          dari
-          <span class="font-medium text-slate-900 dark:text-white">{{
-            paginationMeta.totalData
-          }}</span>
-          penugasan
-        </p>
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            :disabled="pageNumber === 1 || isLoading"
-            class="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-            @click="handlePageChange(pageNumber - 1)"
-          >
-            <UiIcon name="mdi-chevron-left" size="sm" />
-          </button>
-
-          <div class="flex items-center gap-1">
-            <template v-for="p in paginationMeta.totalPage" :key="p">
-              <button
-                v-if="
-                  p === 1 ||
-                  p === paginationMeta.totalPage ||
-                  (p >= pageNumber - 1 && p <= pageNumber + 1)
-                "
-                type="button"
-                :class="[
-                  'inline-flex h-9 w-9 items-center justify-center rounded-lg text-sm font-medium transition',
-                  p === pageNumber
-                    ? 'bg-primary-600 text-white'
-                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800',
-                ]"
-                @click="handlePageChange(p)"
-              >
-                {{ p }}
-              </button>
-              <span
-                v-else-if="
-                  (p === 2 && pageNumber > 3) ||
-                  (p === paginationMeta.totalPage - 1 &&
-                    pageNumber < paginationMeta.totalPage - 2)
-                "
-                class="px-1 text-slate-400"
-              >
-                ...
-              </span>
-            </template>
-          </div>
-
-          <button
-            type="button"
-            :disabled="pageNumber === paginationMeta.totalPage || isLoading"
-            class="inline-flex items-center justify-center rounded-lg border border-slate-200 p-2 text-slate-500 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:text-slate-400 dark:hover:bg-slate-800"
-            @click="handlePageChange(pageNumber + 1)"
-          >
-            <UiIcon name="mdi-chevron-right" size="sm" />
-          </button>
+      <template v-slot:[`item.studentName`]="{ item }">
+        <div class="font-medium text-slate-900 dark:text-white">
+          {{ item.studentName }}
         </div>
-      </div>
-    </div>
+        <div class="text-xs text-slate-500">
+          {{ item.studentEmail || "-" }}
+        </div>
+      </template>
+
+      <template v-slot:[`item.assignedAt`]="{ value }">
+        {{
+          value
+            ? new Date(value).toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })
+            : "-"
+        }}
+      </template>
+
+      <template v-slot:[`item.status`]="{ item }">
+        <UiBadge :variant="item.isActive ? 'success' : 'neutral'">
+          {{ item.isActive ? "Aktif" : "Non-aktif" }}
+        </UiBadge>
+      </template>
+    </TableList>
 
     <!-- Assignment Modal -->
-    <UiModal v-model="showAssignModal" :title="selectedAssignment ? 'Edit Penugasan Mentor' : 'Tugaskan Mentor Baru'" size="lg">
+    <UiModal
+      v-model="showAssignModal"
+      :title="
+        selectedAssignment ? 'Edit Penugasan Mentor' : 'Tugaskan Mentor Baru'
+      "
+      size="lg"
+    >
       <div class="space-y-6">
         <p class="text-sm text-slate-500">
           Pilih mahasiswa yang sudah diterima dan tentukan mentor yang akan
@@ -508,6 +382,7 @@ onMounted(() => {
             item-value="id"
             item-title="name"
             required
+            :disabled="!!selectedAssignment"
           />
 
           <UiAutocomplete
@@ -523,22 +398,12 @@ onMounted(() => {
       </div>
 
       <template #footer>
-        <button
-          type="button"
-          class="rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
-          @click="showAssignModal = false"
+        <UiButton color="secondary" @click="showAssignModal = false"
+          >Batal</UiButton
         >
-          Batal
-        </button>
-        <button
-          type="button"
-          :disabled="isSubmitting"
-          class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-50"
-          @click="handleAssign"
-        >
-          <UiSpinner v-if="isSubmitting" size="sm" />
-          <span>{{ isSubmitting ? "Memproses..." : "Tugaskan" }}</span>
-        </button>
+        <UiButton color="primary" :loading="isSubmitting" @click="handleAssign">
+          {{ selectedAssignment ? "Simpan" : "Tugaskan" }}
+        </UiButton>
       </template>
     </UiModal>
   </div>

@@ -8,9 +8,6 @@ export const i18nConfig = {
     bundle: {
         optimizeTranslationDirective: false
     },
-    detectBrowserLanguage: {
-        useCookie: true,
-        cookieKey: 'i18n_redirected',
-        fallbackLocale: 'id' as const,
-    },
+    detectBrowserLanguage: false,
 }
+

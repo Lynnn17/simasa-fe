@@ -138,11 +138,11 @@
     "Jum": "Jum",
     "Sab": "Sab",
     "login": {
-        "welcome_title": "Login Gate System",
-        "sign_into": "Silahkan login menggunakan username dan password Anda.",
-        "username_label": "Username",
-        "username_placeholder": "Masukkan username anda",
-        "username_required": "Username wajib diisi",
+        "welcome_title": "Portal Magang Greatsoft",
+        "sign_into": "Silahkan login menggunakan username/email dan password Anda.",
+        "username_label": "Username / Email",
+        "username_placeholder": "Masukkan username atau email anda",
+        "username_required": "Username atau email wajib diisi",
         "password_label": "Kata Sandi",
         "password_placeholder": "Masukkan kata sandi anda",
         "password_required": "Password wajib diisi",
@@ -152,23 +152,94 @@
         "or_sign_in_with": "atau masuk dengan",
         "dont_have_account": "Belum punya akun?",
         "sign_up": "Daftar",
-        "copyright": "Hak Cipta © 2026 Gate System Ajinomoto. Seluruh hak cipta dilindungi.",
+        "copyright": "Hak Cipta © 2026 PT Greatsoft Solusi Indonesia. Seluruh hak cipta dilindungi.",
         "slider": {
             "slide1": {
                 "title_1": "Selamat Datang di",
-                "title_highlight": "Ajinomoto",
-                "title_2": "Gate System.",
-                "description": "Platform yang dirancang untuk membantu organisasi mengelola kontrol akses dan log masuk secara efisien."
+                "title_highlight": "Greatsoft",
+                "title_2": "Internship.",
+                "description": "Platform pendaftaran magang resmi PT Greatsoft Solusi Indonesia untuk talenta muda berbakat."
             },
             "slide2": {
-                "title_1": "Kontrol Akses",
-                "title_highlight": "Aman",
-                "description": "Kelola akses masuk dan keluar dengan standar keamanan tinggi dan terintegrasi."
+                "title_1": "Kembangkan",
+                "title_highlight": "Karirmu",
+                "description": "Dapatkan pengalaman kerja nyata dan bimbingan langsung dari para profesional di bidang teknologi."
             },
             "slide3": {
-                "title_1": "Pemantauan",
-                "title_highlight": "Real-time",
-                "description": "Pantau aktivitas gate secara real-time dengan laporan dan analitik yang akurat."
+                "title_1": "Proses",
+                "title_highlight": "Transparan",
+                "description": "Pantau status pendaftaran dan penugasan magang Anda secara real-time melalui portal SIMASA."
+            }
+        }
+    },
+    "register": {
+        "title": "Pendaftaran",
+        "step1": {
+            "label": "Langkah 1",
+            "title": "Informasi Pribadi"
+        },
+        "step2": {
+            "label": "Langkah 2",
+            "title": "Detail Akademik"
+        },
+        "step3": {
+            "label": "Langkah 3",
+            "title": "Unggah CV"
+        },
+        "personal_info": {
+            "title": "Informasi Pribadi",
+            "description": "Harap berikan detail Anda sesuai dengan yang tertera pada dokumen resmi."
+        },
+        "academic_details": {
+            "title": "Detail Akademik"
+        },
+        "upload_cv": {
+            "title": "Unggah CV",
+            "placeholder": "Unggah file atau seret dan lepas",
+            "hint": "PDF hingga 10MB"
+        },
+        "form": {
+            "full_name": "Nama Lengkap",
+            "email": "Alamat Email",
+            "phone": "Nomor Telepon",
+            "university": "Universitas",
+            "major": "Jurusan",
+            "semester": "Semester Saat Ini",
+            "period": "Periode Magang",
+            "placeholders": {
+                "full_name": "Jane Doe",
+                "email": "jane{'@'}example.com",
+                "phone": "08123456789",
+                "university": "Universitas Negeri",
+                "major": "Teknik Informatika",
+                "semester": "Pilih Semester",
+                "period": "misal: Januari - Juni 2026"
+            }
+        },
+        "buttons": {
+            "back": "Kembali",
+            "next": "Langkah Selanjutnya",
+            "submit": "Kirim Pendaftaran"
+        },
+        "messages": {
+            "success": "Pendaftaran berhasil!",
+            "upload_failed": "Gagal mengunggah CV. Silakan coba lagi.",
+            "error": "Pendaftaran gagal. Silakan coba lagi.",
+            "validation": {
+                "full_name_required": "Nama lengkap wajib diisi",
+                "university_required": "Universitas wajib diisi",
+                "major_required": "Jurusan wajib diisi",
+                "semester_required": "Semester wajib diisi",
+                "phone_required": "Nomor telepon wajib diisi",
+                "phone_invalid": "Format nomor telepon tidak valid",
+                "email_required": "Email wajib diisi",
+                "email_invalid": "Format email tidak valid",
+                "email_exists": "Email ini sudah terdaftar dalam sistem",
+                "registration_exists": "Email ini sudah memiliki pendaftaran yang sedang diproses",
+                "period_required": "Periode magang wajib diisi",
+                "cv_required": "CV wajib diunggah",
+                "cv_type": "CV harus berupa file PDF",
+                "cv_size": "Ukuran CV maksimal 10MB"
             }
         }
     }

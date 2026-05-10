@@ -17,9 +17,5 @@ export default function internshipLogbookService() {
     async updateLogbook(id: string, payload: any) {
       return await api.put(`/internship/logbook/${id}`, payload);
     },
-
-    async updateLogbookStatus(id: string, payload: any) {
-      return await api.put(`/internship/logbook/status/${id}`, payload);
-    },
   };
 }

@@ -26,10 +26,16 @@ const close = () => {
 // Validation Schema
 const schema = toTypedSchema(
   z.object({
-    logDate: z.string().or(z.date()).refine((val) => val !== null && val !== '', {
-      message: "Tanggal wajib diisi",
-    }),
+    logDate: z
+      .string()
+      .or(z.date())
+      .refine((val) => val !== null && val !== "", {
+        message: "Tanggal wajib diisi",
+      }),
     activities: z.string().min(10, "Aktivitas minimal 10 karakter"),
+    progressStatus: z.enum(["in_progress", "done", "blocked"], {
+      required_error: "Status progress wajib dipilih",
+    }),
     blockers: z
       .string()
       .min(
@@ -37,7 +43,10 @@ const schema = toTypedSchema(
         "Kendala wajib diisi, minimal 5 karakter (tulis 'Tidak ada' jika tidak ada)",
       ),
     planTomorrow: z.string().min(10, "Rencana besok minimal 10 karakter"),
-    evidenceURL: z.string().url("Format URL tidak valid").or(z.literal("")).optional(),
+    evidenceURL: z
+      .string()
+      .min(1, "Link bukti wajib diisi")
+      .url("Format URL tidak valid"),
   }),
 );
 
@@ -45,8 +54,9 @@ const { handleSubmit, errors, defineField, resetForm, setFieldValue } = useForm(
   {
     validationSchema: schema,
     initialValues: {
-      logDate: new Date().toISOString().split('T')[0],
+      logDate: new Date().toISOString().split("T")[0],
       activities: "",
+      progressStatus: "in_progress" as "in_progress" | "done" | "blocked",
       blockers: "",
       planTomorrow: "",
       evidenceURL: "",
@@ -55,33 +65,49 @@ const { handleSubmit, errors, defineField, resetForm, setFieldValue } = useForm(
 );
 
 const [activities] = defineField("activities");
+const [progressStatus] = defineField("progressStatus");
 const [blockers] = defineField("blockers");
 const [planTomorrow] = defineField("planTomorrow");
 const [evidenceURL] = defineField("evidenceURL");
 
-const logDate = ref(new Date().toISOString().split('T')[0]);
-watch(logDate, (val) => {
-  setFieldValue("logDate", val);
+// Today's date (read-only for create mode)
+const todayFormatted = computed(() => {
+  return new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 });
 
+const progressStatusOptions = [
+  { label: "In Progress (Sedang Dikerjakan)", value: "in_progress" },
+  { label: "Done (Selesai)", value: "done" },
+  { label: "Blocked (Terhambat)", value: "blocked" },
+];
+
 // Reset or populate form when modal opens
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
-    if (props.logbook) {
-      // Edit Mode
-      setFieldValue("logDate", props.logbook.logDate);
-      setFieldValue("activities", props.logbook.activities);
-      setFieldValue("blockers", props.logbook.blockers);
-      setFieldValue("planTomorrow", props.logbook.planTomorrow);
-      setFieldValue("evidenceURL", props.logbook.evidenceURL || "");
-      logDate.value = new Date(props.logbook.logDate).toISOString().split('T')[0];
-    } else {
-      // Create Mode
-      resetForm();
-      logDate.value = new Date().toISOString().split('T')[0];
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      if (props.logbook) {
+        // Edit Mode
+        setFieldValue("logDate", props.logbook.logDate);
+        setFieldValue("activities", props.logbook.activities);
+        setFieldValue("progressStatus", props.logbook.progressStatus || "in_progress");
+        setFieldValue("blockers", props.logbook.blockers);
+        setFieldValue("planTomorrow", props.logbook.planTomorrow);
+        setFieldValue("evidenceURL", props.logbook.evidenceURL || props.logbook.evidenceUrl || "");
+      } else {
+        // Create Mode — date is auto today
+        resetForm();
+        setFieldValue("logDate", new Date().toISOString().split("T")[0]);
+        setFieldValue("progressStatus", "in_progress");
+      }
     }
-  }
-});
+  },
+);
 
 const onSubmit = handleSubmit(async (values) => {
   try {
@@ -89,7 +115,10 @@ const onSubmit = handleSubmit(async (values) => {
 
     const payload = {
       ...values,
-      logDate: typeof values.logDate === 'string' ? values.logDate : values.logDate.toISOString().split('T')[0],
+      logDate:
+        typeof values.logDate === "string"
+          ? values.logDate
+          : values.logDate.toISOString().split("T")[0],
     };
 
     if (props.logbook?.id) {
@@ -120,21 +149,27 @@ const onSubmit = handleSubmit(async (values) => {
     size="lg"
   >
     <form @submit.prevent="onSubmit" class="space-y-6">
-      <!-- Tanggal -->
+      <!-- Tanggal (Read-only, auto-filled) -->
       <div class="space-y-2">
         <label
           class="block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
-          Tanggal Logbook <span class="text-red-500">*</span>
+          Tanggal Logbook
         </label>
-        <UiDatePicker
-          v-model="logDate"
-          mode="date"
-          auto-apply
-          placeholder="Pilih Tanggal"
-        />
-        <p v-if="errors.logDate" class="text-sm text-red-500">
-          {{ errors.logDate }}
+        <div
+          class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
+        >
+          <UiIcon
+            name="mdi-calendar-check"
+            size="sm"
+            class="text-primary-500"
+          />
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ todayFormatted }}
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">
+          Tanggal diisi otomatis oleh sistem dan tidak dapat diubah.
         </p>
       </div>
 
@@ -156,6 +191,24 @@ const onSubmit = handleSubmit(async (values) => {
         />
         <p v-if="errors.activities" class="text-sm text-red-500">
           {{ errors.activities }}
+        </p>
+      </div>
+
+      <!-- Status Progress -->
+      <div class="space-y-2">
+        <label
+          class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
+          Status Progress <span class="text-red-500">*</span>
+        </label>
+        <UiSelect
+          v-model="progressStatus"
+          placeholder="Pilih status progress..."
+          :options="progressStatusOptions"
+          :error="!!errors.progressStatus"
+        />
+        <p v-if="errors.progressStatus" class="text-sm text-red-500">
+          {{ errors.progressStatus }}
         </p>
       </div>
 
@@ -203,7 +256,7 @@ const onSubmit = handleSubmit(async (values) => {
         <label
           class="block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
-          Link Bukti (Evidence URL)
+          Link Bukti (Evidence URL) <span class="text-red-500">*</span>
         </label>
         <UiInput
           v-model="evidenceURL"
@@ -215,7 +268,9 @@ const onSubmit = handleSubmit(async (values) => {
         </p>
       </div>
 
-      <div class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 mt-6 pt-6">
+      <div
+        class="pt-4 flex justify-end gap-3 border-t border-slate-100 dark:border-slate-800 mt-6 pt-6"
+      >
         <button
           type="button"
           @click="close"
@@ -229,7 +284,13 @@ const onSubmit = handleSubmit(async (values) => {
           class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-50"
         >
           <UiSpinner v-if="isSubmitting" size="sm" />
-          <span>{{ isSubmitting ? "Menyimpan..." : (props.logbook ? "Simpan Perubahan" : "Submit Logbook") }}</span>
+          <span>{{
+            isSubmitting
+              ? "Menyimpan..."
+              : props.logbook
+                ? "Simpan Perubahan"
+                : "Submit Logbook"
+          }}</span>
         </button>
       </div>
     </form>

@@ -7,7 +7,7 @@
 /* Custom theme variables */
 @theme {
     /* Base primary color - all shades will be derived from this */
-    --color-primary-base: #E53935;
+    --color-primary-base: #DC2626;
     
     /* Colors - Generated from primary-base */
     --color-primary-50: color-mix(in srgb, white 90%, var(--color-primary-base));

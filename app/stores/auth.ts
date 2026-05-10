@@ -104,10 +104,15 @@ export const useAuthStore = defineStore("auth", {
     },
 
     logout() {
-      // Remove token from cookies using useCookie
-      const config = useRuntimeConfig();
-      const tokenCookie = useCookie(config.public.tokenKey);
-      tokenCookie.value = null;
+      // Accessing config and cookies safely
+      try {
+        const config = useRuntimeConfig();
+        const tokenCookie = useCookie(config.public.tokenKey);
+        tokenCookie.value = null;
+      } catch (e) {
+        // Fallback for context-less calls
+        console.warn("Cookie could not be cleared due to lost Nuxt context");
+      }
 
       this.user = null;
       this.token = null;

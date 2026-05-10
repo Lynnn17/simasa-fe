@@ -133,7 +133,6 @@ const handleLogout = async () => {
     >
       <UiAppLogo 
         :collapsed="isEffectivelyCollapsed" 
-        image="/images/logo-ajinomoto.webp" 
         :logo-size="isEffectivelyCollapsed ? 35 : 100" />
     </div>
 

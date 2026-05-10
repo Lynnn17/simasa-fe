@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import internshipLogbookService from "@/services/internship-logbook.service";
-
 const props = defineProps<{
   modelValue: boolean;
   logbook: any;
@@ -8,30 +6,35 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "update:modelValue", value: boolean): void;
-  (e: "refresh"): void;
 }>();
-
-const logbookService = internshipLogbookService();
-const swal = useSwal();
-const isSubmitting = ref(false);
 
 const close = () => {
   emit("update:modelValue", false);
 };
 
-const handleUpdateStatus = async (status: string) => {
-  if (!props.logbook?.id) return;
-  
-  try {
-    isSubmitting.value = true;
-    await logbookService.updateLogbookStatus(props.logbook.id, { status });
-    swal.success("Berhasil", `Status logbook diubah menjadi ${status}`);
-    emit("refresh");
-    close();
-  } catch (error: any) {
-    swal.error("Gagal", error?.response?._data?.message || "Gagal mengubah status logbook");
-  } finally {
-    isSubmitting.value = false;
+const getProgressBadgeVariant = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "done":
+      return "success";
+    case "in_progress":
+      return "warning";
+    case "blocked":
+      return "danger";
+    default:
+      return "neutral";
+  }
+};
+
+const getProgressLabel = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "done":
+      return "Selesai";
+    case "in_progress":
+      return "In Progress";
+    case "blocked":
+      return "Terhambat";
+    default:
+      return status || "-";
   }
 };
 </script>
@@ -49,14 +52,14 @@ const handleUpdateStatus = async (status: string) => {
       <div class="flex items-start justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
           <h3 class="font-medium text-slate-900 dark:text-white text-lg">
-            {{ logbook.student?.name || 'Mahasiswa' }}
+            {{ logbook.studentName || logbook.student?.name || 'Mahasiswa' }}
           </h3>
           <p class="text-sm text-slate-500">
             {{ new Date(logbook.logDate).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) }}
           </p>
         </div>
-        <UiBadge :variant="logbook.status === 'approved' || logbook.status === 'submitted' ? 'success' : logbook.status === 'pending' ? 'warning' : 'danger'">
-          {{ logbook.status || 'Pending' }}
+        <UiBadge :variant="getProgressBadgeVariant(logbook.progressStatus)">
+          {{ getProgressLabel(logbook.progressStatus) }}
         </UiBadge>
       </div>
 
@@ -93,7 +96,7 @@ const handleUpdateStatus = async (status: string) => {
       </div>
     </div>
 
-    <!-- Footer Actions -->
+    <!-- Footer -->
     <template #footer>
       <div class="flex items-center justify-end w-full">
         <button

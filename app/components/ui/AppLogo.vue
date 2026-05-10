@@ -6,7 +6,7 @@
         <UiIcon name="mdi-gate" class="w-6 h-6 text-white" size="md" />
       </div>
       <span v-if="!collapsed" class="text-xl font-bold whitespace-nowrap" :class="textClass">
-        Ajinomoto<sup class="text-xs text-primary-500">Gate</sup>
+        Greatsoft<sup class="text-xs text-primary-500">Internship</sup>
       </span>
     </template>
   </div>

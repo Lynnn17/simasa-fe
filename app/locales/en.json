@@ -138,11 +138,11 @@
     "Jum": "Fri",
     "Sab": "Sat",
     "login": {
-        "welcome_title": "Login Gate System",
-        "sign_into": "Sign into Your Account",
-        "username_label": "Username",
-        "username_placeholder": "Enter your username",
-        "username_required": "Username is required",
+        "welcome_title": "Greatsoft Internship Portal",
+        "sign_into": "Please log in using your username/email and password.",
+        "username_label": "Username / Email",
+        "username_placeholder": "Enter your username or email",
+        "username_required": "Username or email is required",
         "password_label": "Password",
         "password_placeholder": "Enter your password",
         "password_required": "Password is required",
@@ -152,23 +152,94 @@
         "or_sign_in_with": "or sign in with",
         "dont_have_account": "Don't you have an account?",
         "sign_up": "Sign up",
-        "copyright": "Copyright © 2026 Gate System Ajinomoto. All rights reserved.",
+        "copyright": "Copyright © 2026 PT Greatsoft Solusi Indonesia. All rights reserved.",
         "slider": {
             "slide1": {
                 "title_1": "Welcome to",
-                "title_highlight": "Ajinomoto",
-                "title_2": "Gate System.",
-                "description": "A platform designed to help organizations manage access control and login logs efficiently."
+                "title_highlight": "Greatsoft",
+                "title_2": "Internship.",
+                "description": "The official internship registration platform of PT Greatsoft Solusi Indonesia for talented young minds."
             },
             "slide2": {
-                "title_1": "Secure Access",
-                "title_highlight": "Control",
-                "description": "Manage entry and exit access with high security standards and integration."
+                "title_1": "Grow Your",
+                "title_highlight": "Career",
+                "description": "Gain real-world work experience and direct mentorship from technology professionals."
             },
             "slide3": {
-                "title_1": "Real-time",
-                "title_highlight": "Monitoring",
-                "description": "Monitor gate activities in real-time with accurate reports and analytics."
+                "title_1": "Transparent",
+                "title_highlight": "Process",
+                "description": "Track your application status and internship assignments in real-time via the SIMASA portal."
+            }
+        }
+    },
+    "register": {
+        "title": "Registration",
+        "step1": {
+            "label": "Step 1",
+            "title": "Personal Info"
+        },
+        "step2": {
+            "label": "Step 2",
+            "title": "Academic Details"
+        },
+        "step3": {
+            "label": "Step 3",
+            "title": "Upload CV"
+        },
+        "personal_info": {
+            "title": "Personal Information",
+            "description": "Please provide your details as they appear on official documents."
+        },
+        "academic_details": {
+            "title": "Academic Details"
+        },
+        "upload_cv": {
+            "title": "Upload CV",
+            "placeholder": "Upload a file or drag and drop",
+            "hint": "PDF up to 10MB"
+        },
+        "form": {
+            "full_name": "Full Name",
+            "email": "Email Address",
+            "phone": "Phone Number",
+            "university": "University",
+            "major": "Major",
+            "semester": "Current Semester",
+            "period": "Internship Period",
+            "placeholders": {
+                "full_name": "Jane Doe",
+                "email": "jane{'@'}example.com",
+                "phone": "+1 (555) 000-0000",
+                "university": "State University",
+                "major": "Computer Science",
+                "semester": "Select Semester",
+                "period": "e.g. January - June 2026"
+            }
+        },
+        "buttons": {
+            "back": "Back",
+            "next": "Next Step",
+            "submit": "Submit Registration"
+        },
+        "messages": {
+            "success": "Registration successful!",
+            "upload_failed": "Failed to upload CV. Please try again.",
+            "error": "Registration failed. Please try again.",
+            "validation": {
+                "full_name_required": "Full name is required",
+                "university_required": "University is required",
+                "major_required": "Major is required",
+                "semester_required": "Semester is required",
+                "phone_required": "Phone number is required",
+                "phone_invalid": "Invalid phone number format",
+                "email_required": "Email is required",
+                "email_invalid": "Invalid email format",
+                "email_exists": "This email is already registered in the system",
+                "registration_exists": "This email already has a pending registration",
+                "period_required": "Internship period is required",
+                "cv_required": "CV is required",
+                "cv_type": "CV must be a PDF file",
+                "cv_size": "CV size max 10MB"
             }
         }
     }
