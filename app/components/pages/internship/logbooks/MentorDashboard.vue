@@ -6,7 +6,6 @@ const authStore = useAuthStore();
 const logbookService = internshipLogbookService();
 const mentorId = computed(() => authStore.user?.id);
 const route = useRoute();
-const swal = useSwal();
 
 const tableData = ref({
   items: [],
@@ -15,16 +14,14 @@ const tableData = ref({
 const isLoading = ref(false);
 const isQuickViewOpen = ref(false);
 const selectedLogbook = ref<any>(null);
-const isStatusUpdating = ref<string | null>(null);
-const pendingReviewCount = ref<number | null>(null);
 
 const headers = computed(() => [
   { key: "studentName", title: "Mahasiswa", sortable: true },
   { key: "logDate", title: "Tanggal", sortable: true },
   { key: "activities", title: "Aktivitas" },
-  { key: "status", title: "Status", align: "center" },
+  { key: "progressStatus", title: "Status Progress", align: "center" },
   { key: "evidenceUrl", title: "Bukti", align: "center" },
-  { key: "actions", title: "Aksi", align: "center", width: "15%" },
+  { key: "actions", title: "Aksi", align: "center", width: "10%" },
 ]);
 
 const filterSchema = computed(() => [
@@ -32,10 +29,16 @@ const filterSchema = computed(() => [
     name: "q",
     type: "search" as const,
     placeholder: "Cari mahasiswa atau aktivitas...",
-    colMd: 8,
+    colMd: 4,
   },
   {
-    name: "status",
+    name: "date",
+    type: "date" as const,
+    placeholder: "Filter Tanggal",
+    colMd: 4,
+  },
+  {
+    name: "progressStatus",
     type: "select" as const,
     placeholder: "Semua Status",
     items: "statusOptions",
@@ -46,16 +49,16 @@ const filterSchema = computed(() => [
 const filterList = {
   statusOptions: [
     { label: "Semua Status", value: "" },
-    { label: "Pending", value: "pending" },
-    { label: "Approved", value: "approved" },
-    { label: "Rejected", value: "rejected" },
+    { label: "In Progress", value: "in_progress" },
+    { label: "Done", value: "done" },
+    { label: "Blocked", value: "blocked" },
   ],
 };
 
 async function loadData() {
   if (!mentorId.value) return;
 
-  const { pageNumber, pageSize, q, status } = route.query;
+  const { pageNumber, pageSize, q, progressStatus, date } = route.query;
   isLoading.value = true;
 
   try {
@@ -63,7 +66,8 @@ async function loadData() {
       pageNumber: pageNumber || 1,
       pageSize: pageSize || 10,
       search: q || "",
-      status: status || "",
+      progressStatus: progressStatus || "",
+      date: date || "",
     };
 
     const res: any = await logbookService.getMentorDashboard(mentorId.value, params);
@@ -72,11 +76,6 @@ async function loadData() {
       items,
       meta: res?.data?.meta || { totalItems: 0 },
     };
-
-    if (!q && !status) {
-      const pendingCount = items.filter((l: any) => l.status === "pending" || l.status === "submitted").length;
-      pendingReviewCount.value = pendingCount;
-    }
   } catch (error) {
     console.error("Failed to load mentor logbooks", error);
   } finally {
@@ -89,65 +88,47 @@ const actions = computed(() => [
     key: "view",
     icon: "mdi-eye",
     color: "#64748b",
-    tooltip: "Review",
+    tooltip: "Lihat Detail",
     emit: "viewDetail",
   },
-  {
-    key: "approve",
-    icon: "mdi-check-circle",
-    color: "#10b981",
-    tooltip: "Approve",
-    emit: "approveItem",
-    show: (item: any) => item.status === "pending" || item.status === "submitted",
-  },
-  {
-    key: "reject",
-    icon: "mdi-close-circle",
-    color: "#ef4444",
-    tooltip: "Revisi",
-    emit: "rejectItem",
-    show: (item: any) => item.status === "pending" || item.status === "submitted",
-  },
 ]);
-
-const handleUpdateStatus = async (item: any, newStatus: string) => {
-  try {
-    isStatusUpdating.value = item.id;
-    await logbookService.updateLogbookStatus(item.id, { status: newStatus });
-    swal.success("Berhasil", `Status logbook diubah menjadi ${newStatus}`);
-    loadData();
-  } catch (error: any) {
-    swal.error(
-      "Gagal",
-      error?.response?._data?.message || "Gagal mengubah status logbook"
-    );
-  } finally {
-    isStatusUpdating.value = null;
-  }
-};
 
 const openQuickView = (logbook: any) => {
   selectedLogbook.value = logbook;
   isQuickViewOpen.value = true;
 };
 
-const handleApprove = (item: any) => handleUpdateStatus(item, "approved");
-const handleReject = (item: any) => handleUpdateStatus(item, "rejected");
-
-const getStatusBadgeVariant = (status: string) => {
+const getProgressBadgeVariant = (status: string) => {
   switch (status?.toLowerCase()) {
-    case "submitted":
-    case "approved":
+    case "done":
       return "success";
-    case "pending":
+    case "in_progress":
       return "warning";
-    case "late":
-    case "rejected":
+    case "blocked":
       return "danger";
     default:
       return "neutral";
   }
 };
+
+const getProgressLabel = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "done":
+      return "Selesai";
+    case "in_progress":
+      return "In Progress";
+    case "blocked":
+      return "Terhambat";
+    default:
+      return status || "-";
+  }
+};
+
+// SSE: Auto-refresh when a student submits logbook
+const { onEvent } = useSocket();
+onEvent("refresh_logbooks", () => {
+  loadData();
+});
 </script>
 
 <template>
@@ -162,67 +143,9 @@ const getStatusBadgeVariant = (status: string) => {
       >
         Monitoring Logbook
       </h1>
-    </div>
-
-    <!-- Persistent Review Banner -->
-    <div
-      v-if="pendingReviewCount !== null"
-      class="overflow-hidden rounded-2xl border shadow-sm transition-all duration-300"
-      :class="
-        pendingReviewCount > 0
-          ? 'bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800'
-          : 'bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800'
-      "
-    >
-      <div
-        class="flex flex-col sm:flex-row items-center justify-between p-4 gap-4"
-      >
-        <div class="flex items-center gap-3">
-          <div
-            class="p-2 rounded-full"
-            :class="
-              pendingReviewCount > 0
-                ? 'bg-amber-100 dark:bg-amber-800'
-                : 'bg-emerald-100 dark:bg-emerald-800'
-            "
-          >
-            <UiIcon
-              :name="pendingReviewCount > 0 ? 'mdi-clock-alert' : 'mdi-check-all'"
-              :class="
-                pendingReviewCount > 0
-                  ? 'text-amber-600 dark:text-amber-400'
-                  : 'text-emerald-600 dark:text-emerald-400'
-              "
-              size="md"
-            />
-          </div>
-          <div>
-            <h3 class="font-semibold text-slate-900 dark:text-white">
-              Status Review Logbook:
-              <span
-                :class="
-                  pendingReviewCount > 0
-                    ? 'text-amber-600 dark:text-amber-400'
-                    : 'text-emerald-600 dark:text-emerald-400'
-                "
-              >
-                {{
-                  pendingReviewCount > 0
-                    ? `${pendingReviewCount} Menunggu Review`
-                    : "Semua Beres"
-                }}
-              </span>
-            </h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">
-              {{
-                pendingReviewCount > 0
-                  ? "Mohon segera tinjau logbook mahasiswa bimbingan Anda."
-                  : "Tidak ada logbook mahasiswa yang menunggu persetujuan saat ini."
-              }}
-            </p>
-          </div>
-        </div>
-      </div>
+      <p class="mt-1 text-sm text-slate-500">
+        Halaman ini hanya untuk melihat logbook mahasiswa bimbingan Anda.
+      </p>
     </div>
 
     <!-- Table -->
@@ -236,8 +159,6 @@ const getStatusBadgeVariant = (status: string) => {
       :actions="actions"
       @fetchData="loadData"
       @viewDetail="openQuickView"
-      @approveItem="handleApprove"
-      @rejectItem="handleReject"
     >
       <template v-slot:[`item.studentName`]="{ item }">
         <div class="font-medium text-slate-900 dark:text-white">
@@ -260,9 +181,9 @@ const getStatusBadgeVariant = (status: string) => {
         <p class="line-clamp-2 text-sm">{{ value }}</p>
       </template>
 
-      <template v-slot:[`item.status`]="{ value }">
-        <UiBadge :variant="getStatusBadgeVariant(value)">
-          {{ value || "Pending" }}
+      <template v-slot:[`item.progressStatus`]="{ value }">
+        <UiBadge :variant="getProgressBadgeVariant(value)">
+          {{ getProgressLabel(value) }}
         </UiBadge>
       </template>
 
@@ -279,11 +200,10 @@ const getStatusBadgeVariant = (status: string) => {
       </template>
     </TableList>
 
-    <!-- Quick View Modal -->
+    <!-- Quick View Modal (Read-Only) -->
     <PagesInternshipLogbooksQuickViewModal
       v-model="isQuickViewOpen"
       :logbook="selectedLogbook"
-      @refresh="loadData"
     />
   </div>
 </template>

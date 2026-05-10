@@ -145,6 +145,14 @@ const handleSubmit = (task: any) => {
   selectedTask.value = task;
   isSubmitModalOpen.value = true;
 };
+
+// SSE: Auto-refresh when Mentor assigns new task or grades
+const { onEvent } = useSocket();
+onEvent("new_notification", (data: any) => {
+  if (data.type === "task" || data.type === "task_graded" || data.type === "task_revision") {
+    loadData();
+  }
+});
 </script>
 
 <template>

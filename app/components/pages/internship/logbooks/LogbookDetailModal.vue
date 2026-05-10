@@ -29,9 +29,9 @@ const close = () => {
           </p>
         </div>
         <div>
-          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Status</p>
-          <UiBadge :variant="logbook.status === 'approved' ? 'success' : (logbook.status === 'rejected' ? 'danger' : 'warning')">
-            {{ logbook.status || 'Pending' }}
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Status Progress</p>
+          <UiBadge :variant="logbook.progressStatus === 'done' ? 'success' : (logbook.progressStatus === 'blocked' ? 'danger' : 'warning')">
+            {{ logbook.progressStatus === 'done' ? 'Selesai' : logbook.progressStatus === 'blocked' ? 'Terhambat' : 'In Progress' }}
           </UiBadge>
         </div>
       </div>

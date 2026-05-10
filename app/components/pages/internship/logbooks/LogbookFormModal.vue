@@ -33,6 +33,9 @@ const schema = toTypedSchema(
         message: "Tanggal wajib diisi",
       }),
     activities: z.string().min(10, "Aktivitas minimal 10 karakter"),
+    progressStatus: z.enum(["in_progress", "done", "blocked"], {
+      required_error: "Status progress wajib dipilih",
+    }),
     blockers: z
       .string()
       .min(
@@ -53,6 +56,7 @@ const { handleSubmit, errors, defineField, resetForm, setFieldValue } = useForm(
     initialValues: {
       logDate: new Date().toISOString().split("T")[0],
       activities: "",
+      progressStatus: "in_progress" as "in_progress" | "done" | "blocked",
       blockers: "",
       planTomorrow: "",
       evidenceURL: "",
@@ -61,14 +65,26 @@ const { handleSubmit, errors, defineField, resetForm, setFieldValue } = useForm(
 );
 
 const [activities] = defineField("activities");
+const [progressStatus] = defineField("progressStatus");
 const [blockers] = defineField("blockers");
 const [planTomorrow] = defineField("planTomorrow");
 const [evidenceURL] = defineField("evidenceURL");
 
-const logDate = ref(new Date().toISOString().split("T")[0]);
-watch(logDate, (val) => {
-  setFieldValue("logDate", val);
+// Today's date (read-only for create mode)
+const todayFormatted = computed(() => {
+  return new Intl.DateTimeFormat("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 });
+
+const progressStatusOptions = [
+  { label: "In Progress (Sedang Dikerjakan)", value: "in_progress" },
+  { label: "Done (Selesai)", value: "done" },
+  { label: "Blocked (Terhambat)", value: "blocked" },
+];
 
 // Reset or populate form when modal opens
 watch(
@@ -79,16 +95,15 @@ watch(
         // Edit Mode
         setFieldValue("logDate", props.logbook.logDate);
         setFieldValue("activities", props.logbook.activities);
+        setFieldValue("progressStatus", props.logbook.progressStatus || "in_progress");
         setFieldValue("blockers", props.logbook.blockers);
         setFieldValue("planTomorrow", props.logbook.planTomorrow);
-        setFieldValue("evidenceURL", props.logbook.evidenceURL || "");
-        logDate.value = new Date(props.logbook.logDate)
-          .toISOString()
-          .split("T")[0];
+        setFieldValue("evidenceURL", props.logbook.evidenceURL || props.logbook.evidenceUrl || "");
       } else {
-        // Create Mode
+        // Create Mode — date is auto today
         resetForm();
-        logDate.value = new Date().toISOString().split("T")[0];
+        setFieldValue("logDate", new Date().toISOString().split("T")[0]);
+        setFieldValue("progressStatus", "in_progress");
       }
     }
   },
@@ -134,20 +149,27 @@ const onSubmit = handleSubmit(async (values) => {
     size="lg"
   >
     <form @submit.prevent="onSubmit" class="space-y-6">
-      <!-- Tanggal -->
+      <!-- Tanggal (Read-only, auto-filled) -->
       <div class="space-y-2">
         <label
           class="block text-sm font-medium text-slate-700 dark:text-slate-300"
         >
-          Tanggal Logbook <span class="text-red-500">*</span>
+          Tanggal Logbook
         </label>
-        <UiDateOnlyPicker
-          v-model="logDate"
-          placeholder="Pilih Tanggal"
-          :error="errors.logDate"
-        />
-        <p v-if="errors.logDate" class="text-sm text-red-500">
-          {{ errors.logDate }}
+        <div
+          class="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50"
+        >
+          <UiIcon
+            name="mdi-calendar-check"
+            size="sm"
+            class="text-primary-500"
+          />
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+            {{ todayFormatted }}
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">
+          Tanggal diisi otomatis oleh sistem dan tidak dapat diubah.
         </p>
       </div>
 
@@ -169,6 +191,24 @@ const onSubmit = handleSubmit(async (values) => {
         />
         <p v-if="errors.activities" class="text-sm text-red-500">
           {{ errors.activities }}
+        </p>
+      </div>
+
+      <!-- Status Progress -->
+      <div class="space-y-2">
+        <label
+          class="block text-sm font-medium text-slate-700 dark:text-slate-300"
+        >
+          Status Progress <span class="text-red-500">*</span>
+        </label>
+        <UiSelect
+          v-model="progressStatus"
+          placeholder="Pilih status progress..."
+          :options="progressStatusOptions"
+          :error="!!errors.progressStatus"
+        />
+        <p v-if="errors.progressStatus" class="text-sm text-red-500">
+          {{ errors.progressStatus }}
         </p>
       </div>
 

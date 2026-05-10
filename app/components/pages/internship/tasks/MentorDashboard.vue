@@ -196,6 +196,14 @@ const actions = computed(() => [
     show: (item: any) => item.status === "submitted",
   },
 ]);
+
+// SSE: Auto-refresh when student submits a task
+const { onEvent } = useSocket();
+onEvent("new_notification", (data: any) => {
+  if (data.type === "task_submission") {
+    loadData();
+  }
+});
 </script>
 
 <template>

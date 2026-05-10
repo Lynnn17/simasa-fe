@@ -53,6 +53,14 @@ onMounted(() => {
     checkLogbookStatus();
   }
 });
+
+// SSE: Auto-update logbook indicator when student submits logbook
+if (isStudent.value) {
+  const { onEvent } = useSocket();
+  onEvent("refresh_logbooks", () => {
+    checkLogbookStatus();
+  });
+}
 </script>
 
 <template>

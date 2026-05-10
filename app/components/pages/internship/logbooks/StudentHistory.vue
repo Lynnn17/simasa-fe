@@ -24,7 +24,7 @@ const headers = computed(() => [
   { key: "logDate", title: "Tanggal", sortable: true },
   { key: "activities", title: "Aktivitas", sortable: true },
   { key: "planTomorrow", title: "Rencana Besok", sortable: true },
-  { key: "status", title: "Status", align: "center" },
+  { key: "progressStatus", title: "Status Progress", align: "center" },
   { key: "submittedAt", title: "Dikirim Pada", align: "center" },
   { key: "actions", title: "Aksi", align: "center", width: "15%" },
 ]);
@@ -37,7 +37,7 @@ const filterSchema = computed(() => [
     colMd: 8,
   },
   {
-    name: "status",
+    name: "progressStatus",
     type: "select" as const,
     placeholder: "Semua Status",
     items: "statusOptions",
@@ -48,9 +48,9 @@ const filterSchema = computed(() => [
 const filterList = {
   statusOptions: [
     { label: "Semua Status", value: "" },
-    { label: "Pending", value: "pending" },
-    { label: "Approved", value: "approved" },
-    { label: "Rejected", value: "rejected" },
+    { label: "In Progress", value: "in_progress" },
+    { label: "Done", value: "done" },
+    { label: "Blocked", value: "blocked" },
   ],
 };
 
@@ -79,22 +79,20 @@ const actions = computed(() => [
     color: "#0284c7",
     tooltip: "Edit",
     emit: "editItem",
-    show: (item: any) =>
-      item.status === "pending" || item.status === "rejected",
   },
 ]);
 
 async function loadData() {
   if (!studentId.value) return;
 
-  const { pageNumber, pageSize, q, status } = route.query;
+  const { pageNumber, pageSize, q, progressStatus } = route.query;
   isLoading.value = true;
   try {
     const params = {
       pageNumber: pageNumber || 1,
       pageSize: pageSize || 10,
       search: q || "",
-      status: status || "",
+      progressStatus: progressStatus || "",
     };
 
     const res: any = await logbookService.getStudentHistory(
@@ -108,7 +106,7 @@ async function loadData() {
     };
 
     // Check if today's logbook is filled (only on initial load without filters)
-    if (!q && !status) {
+    if (!q && !progressStatus) {
       const today = new Date();
       const todayStr = today.toISOString().split("T")[0];
       const dayOfWeek = today.getDay();
@@ -146,18 +144,29 @@ function handleViewDetail(item: any) {
   isDetailModalOpen.value = true;
 }
 
-function getStatusBadgeVariant(status: string) {
+function getProgressBadgeVariant(status: string) {
   switch (status?.toLowerCase()) {
-    case "submitted":
-    case "approved":
+    case "done":
       return "success";
-    case "pending":
+    case "in_progress":
       return "warning";
-    case "late":
-    case "rejected":
+    case "blocked":
       return "danger";
     default:
       return "neutral";
+  }
+}
+
+function getProgressLabel(status: string) {
+  switch (status?.toLowerCase()) {
+    case "done":
+      return "Selesai";
+    case "in_progress":
+      return "In Progress";
+    case "blocked":
+      return "Terhambat";
+    default:
+      return status || "-";
   }
 }
 
@@ -292,9 +301,9 @@ const isWorkDay = computed(() => {
         <p class="line-clamp-2 text-sm">{{ value }}</p>
       </template>
 
-      <template v-slot:[`item.status`]="{ value }">
-        <UiBadge :variant="getStatusBadgeVariant(value)">
-          {{ value || "Pending" }}
+      <template v-slot:[`item.progressStatus`]="{ value }">
+        <UiBadge :variant="getProgressBadgeVariant(value)">
+          {{ getProgressLabel(value) }}
         </UiBadge>
       </template>
 
