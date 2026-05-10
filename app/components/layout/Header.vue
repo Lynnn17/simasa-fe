@@ -13,41 +13,67 @@ const sidebarCollapsed = ref(false);
 onMounted(() => {
   sidebarLayout.value = configStore.sidebarLayout;
   sidebarCollapsed.value = configStore.sidebarCollapsed;
-  
-  watch(() => configStore.sidebarLayout, (val) => {
-    sidebarLayout.value = val;
-  });
-  watch(() => configStore.sidebarCollapsed, (val) => {
-    sidebarCollapsed.value = val;
-  });
+
+  watch(
+    () => configStore.sidebarLayout,
+    (val) => {
+      sidebarLayout.value = val;
+    },
+  );
+  watch(
+    () => configStore.sidebarCollapsed,
+    (val) => {
+      sidebarCollapsed.value = val;
+    },
+  );
 });
-
-
 </script>
 
 <template>
   <header
     :class="[
       'fixed top-0 z-30 h-16 bg-white/80 dark:bg-slate-900/80 transition-[left,right,background-color] duration-300',
-      sidebarLayout === 'horizontal' 
-        ? 'left-0 right-0' 
-        : sidebarCollapsed ? 'left-0 lg:left-20 right-0' : 'left-0 lg:left-64 right-0',
+      sidebarLayout === 'horizontal'
+        ? 'left-0 right-0'
+        : sidebarCollapsed
+          ? 'left-0 lg:left-20 right-0'
+          : 'left-0 lg:left-64 right-0',
     ]"
-    style="box-shadow: rgba(145, 158, 171, 0.2) 0px 0px 2px 0px, rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;"
+    style="
+      box-shadow:
+        rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,
+        rgba(145, 158, 171, 0.12) 0px 12px 24px -4px;
+    "
   >
-    <div v-if="sidebarLayout" class="flex items-center justify-between h-full px-4 lg:px-6">
+    <div
+      v-if="sidebarLayout"
+      class="flex items-center justify-between h-full px-4 lg:px-6"
+    >
       <!-- Left section -->
       <div class="flex items-center gap-4">
         <!-- Logo (only for horizontal layout on desktop) -->
-        <UiAppLogo v-if="sidebarLayout === 'horizontal'" class="hidden lg:flex mr-4" />
+        <UiAppLogo
+          v-if="sidebarLayout === 'horizontal'"
+          class="hidden lg:flex mr-4"
+        />
 
         <!-- Mobile menu button (for both layouts on mobile) -->
         <button
           class="lg:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
           @click="openMobile"
         >
-          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          <svg
+            class="w-6 h-6"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M4 6h16M4 12h16M4 18h16"
+            />
           </svg>
         </button>
 
@@ -57,17 +83,17 @@ onMounted(() => {
           class="hidden lg:flex p-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
           @click="configStore.toggleSidebar()"
         >
-          <UiIcon 
+          <UiIcon
             v-if="!sidebarCollapsed"
-            name="IconMenu2" 
-            type="tabler" 
+            name="IconMenu2"
+            type="tabler"
             size="md"
             class="transition-transform"
           />
-          <UiIcon 
+          <UiIcon
             v-else
-            name="IconChevronsRight" 
-            type="tabler" 
+            name="IconChevronsRight"
+            type="tabler"
             size="md"
             class="transition-transform"
           />
@@ -163,10 +189,7 @@ onMounted(() => {
         </ClientOnly>
 
         <!-- Notifications -->
-        <LayoutNotificationDropdown />
-
-
-
+        <!-- <LayoutNotificationDropdown /> -->
 
         <!-- User Profile Dropdown -->
         <LayoutUserProfileDropdown />
