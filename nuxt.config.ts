@@ -44,6 +44,7 @@ export default defineNuxtConfig({
     public: {
       // Frontend calls /api/* which gets proxied to /v1/*
       apiBase: "/api",
+      sseUrl: process.env.NUXT_PUBLIC_SSE_URL || "http://localhost:8098",
       tokenKey: TOKEN_KEY || "access_token",
       tokenMaxAge: Number(TOKEN_MAX_AGE) || 604800, // 7 days in seconds
     },
