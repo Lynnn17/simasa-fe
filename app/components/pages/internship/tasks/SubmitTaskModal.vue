@@ -12,6 +12,11 @@ const emit = defineEmits<{
   (e: "refresh"): void;
 }>();
 
+const isLate = computed(() => {
+  if (!props.task?.deadline) return false;
+  return new Date() > new Date(props.task.deadline);
+});
+
 const fileSvc = fileService();
 const taskSvc = internshipTaskService();
 const swal = useSwal();
@@ -150,6 +155,15 @@ const linkify = (text: string) => {
           class="mt-2 text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap"
           v-html="linkify(task.description)"
         ></div>
+      </div>
+
+      <!-- Warning Late -->
+      <div v-if="isLate" class="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-700/50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-sm flex gap-3">
+        <i class="mdi mdi-alert-circle-outline text-lg"></i>
+        <div>
+          <p class="font-medium">Perhatian: Deadline tugas ini sudah lewat.</p>
+          <p class="text-xs mt-0.5">Pengumpulan terlambat akan dicatat dalam sistem</p>
+        </div>
       </div>
 
       <!-- File Upload Form -->
