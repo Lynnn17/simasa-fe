@@ -7,7 +7,6 @@ const listeners = new Map<string, Set<(data: any) => void>>();
 
 export const useSocket = () => {
   const authStore = useAuthStore();
-  const config = useRuntimeConfig();
 
   const connect = () => {
     if (eventSource.value) return;
@@ -15,7 +14,7 @@ export const useSocket = () => {
     const user = authStore.user;
     if (!user) return;
 
-    const baseUrl = config.public.sseUrl;
+    const baseUrl = "/sse";
     const url = `${baseUrl}/events?userId=${user.id}&roleId=${user.roleId}`;
 
     console.log("Connecting SSE to:", url);

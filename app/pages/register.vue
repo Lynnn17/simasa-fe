@@ -248,9 +248,21 @@ import { z } from "zod";
 
 import internshipRegistrationService from "~/services/internship-registration.service";
 import fileService from "~/services/file.service";
+import { useConfigStore } from "~/stores/config";
 
 definePageMeta({
   layout: false,
+});
+
+const configStore = useConfigStore();
+
+onMounted(() => {
+  const prevTheme = configStore.theme;
+  configStore.setTheme("light");
+  
+  onUnmounted(() => {
+    configStore.setTheme(prevTheme);
+  });
 });
 
 const { t } = useI18n();
