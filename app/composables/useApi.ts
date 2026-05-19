@@ -31,7 +31,7 @@ export function useApi() {
 
             if (status === 401) {
                 authStore.logout();
-                toast.error("Session Expired", "Please login again.");
+                toast.error("Sesi Anda telah berakhir", "Silakan login kembali.");
                 router.push("/login");
             } else if (status === 403) {
                 toast.error("Access Denied", "You don't have permission.");

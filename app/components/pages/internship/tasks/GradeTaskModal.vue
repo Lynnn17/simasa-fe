@@ -114,6 +114,16 @@ const linkify = (text: string) => {
       <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-800/50">
         <h4 class="font-semibold text-slate-900 dark:text-white">{{ task.title }}</h4>
         <p class="mt-1 text-sm text-slate-500">Mahasiswa: <span class="font-medium text-slate-700 dark:text-slate-300">{{ task.student?.name || task.studentName || 'Mahasiswa' }}</span></p>
+        <p v-if="task.submissionUrl" class="mt-1 text-sm text-slate-500">
+          Link Bukti: 
+          <a 
+            :href="task.submissionUrl" 
+            target="_blank" 
+            class="text-primary-600 hover:underline dark:text-primary-400 font-medium"
+          >
+            {{ task.submissionUrl }}
+          </a>
+        </p>
         <div 
           class="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap"
           v-html="linkify(task.description)"

@@ -78,7 +78,7 @@ const close = () => {
 };
 
 const handleCreate = async () => {
-  if (!form.value.studentId || !form.value.title || !form.value.deadline) {
+  if (!form.value.studentId || !form.value.title || !form.value.deadline || !form.value.description) {
     swal.toast("Lengkapi data tugas terlebih dahulu", "warning");
     return;
   }
@@ -172,24 +172,23 @@ const handleCreate = async () => {
       </div>
 
       <div>
-        <label
-          class="mb-2 block text-sm font-medium text-slate-900 dark:text-white"
-        >
-          Judul Tugas <span class="text-red-500">*</span>
-        </label>
-        <UiInput v-model="form.title" placeholder="Masukkan judul tugas..." />
+        <UiInput
+          v-model="form.title"
+          label="Judul Tugas"
+          placeholder="Masukkan judul tugas..."
+          required
+          :rules="[(v: string) => !!v || 'Field Judul Tugas wajib diisi.']"
+        />
       </div>
 
       <div>
-        <label
-          class="mb-2 block text-sm font-medium text-slate-900 dark:text-white"
-        >
-          Deskripsi Tugas
-        </label>
         <UiTextarea
           v-model="form.description"
+          label="Deskripsi Tugas"
           placeholder="Masukkan instruksi detail tugas..."
           rows="4"
+          required
+          :rules="[(v: string) => !!v || 'Deskripsi Tugas wajib diisi.']"
         />
       </div>
     </div>
@@ -205,7 +204,7 @@ const handleCreate = async () => {
         </button>
         <button
           type="button"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || !form.title"
           class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-50"
           @click="handleCreate"
         >
@@ -215,7 +214,7 @@ const handleCreate = async () => {
               ? "Memproses..."
               : isEdit
                 ? "Simpan Perubahan"
-                : "Buat Tugas"
+                : "Assign Tugas"
           }}</span>
         </button>
       </div>

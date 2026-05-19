@@ -54,16 +54,20 @@ const filterList = {
   ],
 };
 
-const actionToolbars = computed(() => [
-  {
-    key: "addItem",
-    icon: "mdi-plus-circle-outline",
-    color: "primary",
-    tooltip: "Tambah",
-    emit: "addItem",
-    type: "default" as const,
-  },
-]);
+const actionToolbars = computed(() => {
+  if (hasFilledToday.value) return [];
+
+  return [
+    {
+      key: "addItem",
+      icon: "mdi-plus-circle-outline",
+      color: "primary",
+      tooltip: "Tambah",
+      emit: "addItem",
+      type: "default" as const,
+    },
+  ];
+});
 
 const actions = computed(() => [
   {

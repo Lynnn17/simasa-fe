@@ -24,11 +24,13 @@ const swal = useSwal();
 const isSubmitting = ref(false);
 const selectedFiles = ref<File[]>([]);
 const uploadProgress = ref(0);
+const submissionUrl = ref("");
 
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
     selectedFiles.value = [];
     uploadProgress.value = 0;
+    submissionUrl.value = "";
   }
 });
 
@@ -98,6 +100,11 @@ const handleSubmit = async () => {
     return;
   }
 
+  if (!submissionUrl.value) {
+    swal.toast("Mohon isi URL pengumpulan terlebih dahulu", "warning");
+    return;
+  }
+
   try {
     isSubmitting.value = true;
     
@@ -109,11 +116,12 @@ const handleSubmit = async () => {
       await taskSvc.submitTask({
         taskId: props.task.id,
         fileUrl: fileUrl,
+        submissionUrl: submissionUrl.value,
       });
     }
     
     uploadProgress.value = 100;
-    swal.success("Berhasil", `${selectedFiles.value.length} Gambar telah dikumpulkan`);
+    swal.success("Berhasil", "Tugas sudah dikumpulkan");
     emit("refresh");
     close();
   } catch (error: any) {
@@ -164,6 +172,17 @@ const linkify = (text: string) => {
           <p class="font-medium">Perhatian: Deadline tugas ini sudah lewat.</p>
           <p class="text-xs mt-0.5">Pengumpulan terlambat akan dicatat dalam sistem</p>
         </div>
+      </div>
+
+      <!-- Submission URL -->
+      <div>
+        <UiInput
+          v-model="submissionUrl"
+          label="URL Pengumpulan"
+          placeholder="Masukkan URL pengumpulan (misal: link repository atau drive)..."
+          required
+          :rules="[(v: string) => !!v || 'URL Pengumpulan wajib diisi.']"
+        />
       </div>
 
       <!-- File Upload Form -->
@@ -242,7 +261,7 @@ const linkify = (text: string) => {
         </button>
         <button
           type="button"
-          :disabled="isSubmitting || selectedFiles.length === 0"
+          :disabled="isSubmitting || selectedFiles.length === 0 || !submissionUrl"
           class="inline-flex items-center justify-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-primary-500 disabled:opacity-50 min-w-[140px]"
           @click="handleSubmit"
         >

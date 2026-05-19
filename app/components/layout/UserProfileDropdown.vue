@@ -136,25 +136,7 @@ onUnmounted(() => {
 
         <div class="border-t border-slate-200 dark:border-slate-700"></div>
 
-        <!-- Menu Items -->
-        <div class="py-2">
-          <button
-            @click="navigateAndClose('/profile')"
-            class="w-full flex items-center gap-4 px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-          >
-            <div
-              class="w-10 h-10 rounded-lg bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center"
-            >
-              <UiIcon name="mdi-account" size="lg" class="text-primary-500" />
-            </div>
-            <div class="text-left">
-              <p class="font-medium text-primary-500">My Profile</p>
-              <p class="text-sm text-slate-500 dark:text-slate-400">
-                Account settings
-              </p>
-            </div>
-          </button>
-        </div>
+
 
         <!-- Upgrade Banner -->
         <!-- <div class="mx-4 mb-4 p-4 rounded-xl bg-gradient-to-r from-primary-100 to-cyan-100 dark:from-primary-900/30 dark:to-cyan-900/30 relative overflow-hidden">
