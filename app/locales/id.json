@@ -1,246 +1,246 @@
 {
-    "Data": "Data",
-    "Simpan": "Simpan",
-    "Simpan Perubahan": "Simpan Perubahan",
-    "Batal": "Batal",
-    "Hapus": "Hapus",
-    "Edit": "Edit",
-    "Ubah": "Ubah",
-    "Tambah": "Tambah",
-    "Cari": "Cari",
-    "Cari (Tekan Enter)": "Cari (Tekan Enter)",
-    "Memuat...": "Memuat...",
-    "Menghapus...": "Menghapus...",
-    "Muat Ulang": "Muat Ulang",
-    "Tampilkan": "Tampilkan",
-    "Dari": "Dari",
-    "data": "data",
-    "Kirim": "Kirim",
-    "Kembali": "Kembali",
-    "Selanjutnya": "Selanjutnya",
-    "Sebelumnya": "Sebelumnya",
-    "Ya": "Ya",
-    "Tidak": "Tidak",
-    "Konfirmasi": "Konfirmasi",
-    "Tutup": "Tutup",
-    "Lihat": "Lihat",
-    "Lihat Semua": "Lihat Semua",
-    "Aksi": "Aksi",
-    "Aktif": "Aktif",
-    "Nonaktif": "Nonaktif",
-    "Aktifkan": "Aktifkan",
-    "Nonaktifkan": "Nonaktifkan",
-    "aktif": "aktif",
-    "nonaktif": "nonaktif",
-    "Status": "Status",
-    "Kode": "Kode",
-    "Nama": "Nama",
-    "Tipe": "Tipe",
-    "Email": "Email",
-    "No. Telepon": "No. Telepon",
-    "Alamat": "Alamat",
-    "Wajib diisi": "Wajib diisi",
-    "Format email tidak valid": "Format email tidak valid",
-    "Gagal": "Gagal",
-    "Dashboard": "Dashboard",
-    "Master Data": "Master Data",
-    "Pengaturan": "Pengaturan",
-    "Laporan": "Laporan",
-    "User": "User",
-    "Role": "Role",
-    "Menu": "Menu",
-    "Hak Akses": "Hak Akses",
-    "Perusahaan": "Perusahaan",
-    "Lainnya": "Lainnya",
-    "Setting": "Pengaturan",
-    "Username": "Username",
-    "Password": "Password",
-    "Export PDF": "Export PDF",
-    "Export Excel": "Export Excel",
-    "Import": "Import",
+  "Data": "Data",
+  "Simpan": "Simpan",
+  "Simpan Perubahan": "Simpan Perubahan",
+  "Batal": "Batal",
+  "Hapus": "Hapus",
+  "Edit": "Edit",
+  "Ubah": "Ubah",
+  "Tambah": "Tambah",
+  "Cari": "Cari",
+  "Cari (Tekan Enter)": "Cari (Tekan Enter)",
+  "Memuat...": "Memuat...",
+  "Menghapus...": "Menghapus...",
+  "Muat Ulang": "Muat Ulang",
+  "Tampilkan": "Tampilkan",
+  "Dari": "Dari",
+  "data": "data",
+  "Kirim": "Kirim",
+  "Kembali": "Kembali",
+  "Selanjutnya": "Selanjutnya",
+  "Sebelumnya": "Sebelumnya",
+  "Ya": "Ya",
+  "Tidak": "Tidak",
+  "Konfirmasi": "Konfirmasi",
+  "Tutup": "Tutup",
+  "Lihat": "Lihat",
+  "Lihat Semua": "Lihat Semua",
+  "Aksi": "Aksi",
+  "Aktif": "Aktif",
+  "Nonaktif": "Nonaktif",
+  "Aktifkan": "Aktifkan",
+  "Nonaktifkan": "Nonaktifkan",
+  "aktif": "aktif",
+  "nonaktif": "nonaktif",
+  "Status": "Status",
+  "Kode": "Kode",
+  "Nama": "Nama",
+  "Tipe": "Tipe",
+  "Email": "Email",
+  "No. Telepon": "No. Telepon",
+  "Alamat": "Alamat",
+  "Wajib diisi": "Wajib diisi",
+  "Format email tidak valid": "Format email tidak valid",
+  "Gagal": "Gagal",
+  "Dashboard": "Dashboard",
+  "Master Data": "Master Data",
+  "Pengaturan": "Pengaturan",
+  "Laporan": "Laporan",
+  "User": "User",
+  "Role": "Role",
+  "Menu": "Menu",
+  "Hak Akses": "Hak Akses",
+  "Perusahaan": "Perusahaan",
+  "Lainnya": "Lainnya",
+  "Setting": "Pengaturan",
+  "Username": "Username",
+  "Password": "Password",
+  "Export PDF": "Export PDF",
+  "Export Excel": "Export Excel",
+  "Import": "Import",
+  "form": {
+    "add_title": "Tambah {v}",
+    "edit_title": "Ubah {v}",
+    "delete_title": "Hapus {v}",
+    "detail_title": "Detail {v}",
+    "data_title": "Data {v}",
+    "select_title": "Pilih {v}",
+    "placeholder": {
+      "input": "Masukkan {v}",
+      "select": "Pilih {v}"
+    }
+  },
+  "messages": {
+    "confirmation": {
+      "logout": "Apakah Anda yakin ingin keluar dari aplikasi?",
+      "delete": "Apakah Anda yakin menghapus data ini?",
+      "delete_named": "Apakah Anda yakin ingin menghapus {v} ini?",
+      "save_data": "Apakah Anda yakin ingin menyimpan data ini?",
+      "toggle_status": "Apakah Anda yakin ingin mengubah status {name} menjadi {status}?"
+    },
+    "success": {
+      "saved": "Data Berhasil Disimpan",
+      "deleted": "Data Berhasil Dihapus",
+      "updated": "Data Berhasil Diperbarui",
+      "imported": "Data berhasil diimpor"
+    },
+    "error": {
+      "import_failed": "Gagal mengimpor file.",
+      "no_valid_data": "Tidak ada data valid di dalam file."
+    },
+    "validation": {
+      "required": "Wajib Diisi",
+      "email_format": "Format email salah.",
+      "min_length": "Minimal {v} karakter",
+      "password_mismatch": "Kata sandi tidak cocok",
+      "email_invalid": "Email tidak valid"
+    },
+    "info": {
+      "password_empty_note": "Kosongkan password jika tidak ingin mengubah password"
+    }
+  },
+  "import": {
+    "drag_or_click": "Seret file ke sini atau klik untuk memilih",
+    "select_file": "Pilih File",
+    "supported_formats": "Format yang didukung: .xlsx, .xls, .csv",
+    "preview": "Preview",
+    "process": "Proses Import",
+    "back_to_upload": "Kembali ke Upload",
+    "total_rows": "Total Baris",
+    "valid": "Valid",
+    "errors": "Error",
+    "existing": "Sudah Ada",
+    "mode": "Mode Import",
+    "mode_upsert": "Update & Insert (Perbarui data yang sudah ada)",
+    "mode_insert": "Insert Only (Lewati data yang sudah ada)",
+    "already_exists": "Sudah ada",
+    "new_data": "Data baru",
+    "info": "Keterangan",
+    "step_upload": "Upload File",
+    "step_preview": "Preview Data",
+    "step_complete": "Selesai",
+    "processing": "Memproses data...",
+    "complete": "Import Berhasil!",
+    "complete_message": "{count} data berhasil diimport",
+    "add_more": "Tambah File",
+    "error_file_too_large": "Ukuran file melebihi batas maksimum {max}",
+    "error_invalid_type": "Tipe file tidak didukung"
+  },
+  "Row": "Baris",
+  "Kalender": "Kalender",
+  "Semua": "Semua",
+  "Pengumuman": "Pengumuman",
+  "Min": "Min",
+  "Sen": "Sen",
+  "Sel": "Sel",
+  "Rab": "Rab",
+  "Kam": "Kam",
+  "Jum": "Jum",
+  "Sab": "Sab",
+  "login": {
+    "welcome_title": "Portal Magang Greatsoft",
+    "sign_into": "Silahkan login menggunakan email dan password Anda.",
+    "username_label": "Email",
+    "username_placeholder": "Masukkan email anda",
+    "username_required": "Email wajib diisi",
+    "password_label": "Kata Sandi",
+    "password_placeholder": "Masukkan kata sandi anda",
+    "password_required": "Password wajib diisi",
+    "remember_me": "Ingat Saya",
+    "forgot_password": "Lupa Kata Sandi?",
+    "login_button": "Masuk",
+    "or_sign_in_with": "atau masuk dengan",
+    "dont_have_account": "Belum punya akun?",
+    "sign_up": "Daftar",
+    "copyright": "Hak Cipta © 2026 PT Greatsoft Solusi Indonesia. Seluruh hak cipta dilindungi.",
+    "slider": {
+      "slide1": {
+        "title_1": "Selamat Datang di",
+        "title_highlight": "Greatsoft",
+        "title_2": "Internship.",
+        "description": "Platform pendaftaran magang resmi PT Greatsoft Solusi Indonesia untuk talenta muda berbakat."
+      },
+      "slide2": {
+        "title_1": "Kembangkan",
+        "title_highlight": "Karirmu",
+        "description": "Dapatkan pengalaman kerja nyata dan bimbingan langsung dari para profesional di bidang teknologi."
+      },
+      "slide3": {
+        "title_1": "Proses",
+        "title_highlight": "Transparan",
+        "description": "Pantau status pendaftaran dan penugasan magang Anda secara real-time melalui portal SIMASA."
+      }
+    }
+  },
+  "register": {
+    "title": "Pendaftaran",
+    "step1": {
+      "label": "Langkah 1",
+      "title": "Informasi Pribadi"
+    },
+    "step2": {
+      "label": "Langkah 2",
+      "title": "Detail Akademik"
+    },
+    "step3": {
+      "label": "Langkah 3",
+      "title": "Unggah CV"
+    },
+    "personal_info": {
+      "title": "Informasi Pribadi",
+      "description": "Harap berikan detail Anda sesuai dengan yang tertera pada dokumen resmi."
+    },
+    "academic_details": {
+      "title": "Detail Akademik"
+    },
+    "upload_cv": {
+      "title": "Unggah CV",
+      "placeholder": "Unggah file atau seret dan lepas",
+      "hint": "PDF hingga 10MB"
+    },
     "form": {
-        "add_title": "Tambah {v}",
-        "edit_title": "Ubah {v}",
-        "delete_title": "Hapus {v}",
-        "detail_title": "Detail {v}",
-        "data_title": "Data {v}",
-        "select_title": "Pilih {v}",
-        "placeholder": {
-            "input": "Masukkan {v}",
-            "select": "Pilih {v}"
-        }
+      "full_name": "Nama Lengkap",
+      "email": "Alamat Email",
+      "phone": "Nomor Telepon",
+      "university": "Universitas",
+      "major": "Jurusan",
+      "semester": "Semester Saat Ini",
+      "period": "Periode Magang",
+      "placeholders": {
+        "full_name": "Jane Doe",
+        "email": "jane{'@'}example.com",
+        "phone": "08123456789",
+        "university": "Universitas Negeri",
+        "major": "Teknik Informatika",
+        "semester": "Pilih Semester",
+        "period": "misal: Januari - Juni 2026"
+      }
+    },
+    "buttons": {
+      "back": "Kembali",
+      "next": "Langkah Selanjutnya",
+      "submit": "Kirim Pendaftaran"
     },
     "messages": {
-        "confirmation": {
-            "logout": "Apakah Anda yakin ingin keluar dari aplikasi?",
-            "delete": "Apakah Anda yakin menghapus data ini?",
-            "delete_named": "Apakah Anda yakin ingin menghapus {v} ini?",
-            "save_data": "Apakah Anda yakin ingin menyimpan data ini?",
-            "toggle_status": "Apakah Anda yakin ingin mengubah status {name} menjadi {status}?"
-        },
-        "success": {
-            "saved": "Data Berhasil Disimpan",
-            "deleted": "Data Berhasil Dihapus",
-            "updated": "Data Berhasil Diperbarui",
-            "imported": "Data berhasil diimpor"
-        },
-        "error": {
-            "import_failed": "Gagal mengimpor file.",
-            "no_valid_data": "Tidak ada data valid di dalam file."
-        },
-        "validation": {
-            "required": "Wajib Diisi",
-            "email_format": "Format email salah.",
-            "min_length": "Minimal {v} karakter",
-            "password_mismatch": "Kata sandi tidak cocok",
-            "email_invalid": "Email tidak valid"
-        },
-        "info": {
-            "password_empty_note": "Kosongkan password jika tidak ingin mengubah password"
-        }
-    },
-    "import": {
-        "drag_or_click": "Seret file ke sini atau klik untuk memilih",
-        "select_file": "Pilih File",
-        "supported_formats": "Format yang didukung: .xlsx, .xls, .csv",
-        "preview": "Preview",
-        "process": "Proses Import",
-        "back_to_upload": "Kembali ke Upload",
-        "total_rows": "Total Baris",
-        "valid": "Valid",
-        "errors": "Error",
-        "existing": "Sudah Ada",
-        "mode": "Mode Import",
-        "mode_upsert": "Update & Insert (Perbarui data yang sudah ada)",
-        "mode_insert": "Insert Only (Lewati data yang sudah ada)",
-        "already_exists": "Sudah ada",
-        "new_data": "Data baru",
-        "info": "Keterangan",
-        "step_upload": "Upload File",
-        "step_preview": "Preview Data",
-        "step_complete": "Selesai",
-        "processing": "Memproses data...",
-        "complete": "Import Berhasil!",
-        "complete_message": "{count} data berhasil diimport",
-        "add_more": "Tambah File",
-        "error_file_too_large": "Ukuran file melebihi batas maksimum {max}",
-        "error_invalid_type": "Tipe file tidak didukung"
-    },
-    "Row": "Baris",
-    "Kalender": "Kalender",
-    "Semua": "Semua",
-    "Pengumuman": "Pengumuman",
-    "Min": "Min",
-    "Sen": "Sen",
-    "Sel": "Sel",
-    "Rab": "Rab",
-    "Kam": "Kam",
-    "Jum": "Jum",
-    "Sab": "Sab",
-    "login": {
-        "welcome_title": "Portal Magang Greatsoft",
-        "sign_into": "Silahkan login menggunakan username/email dan password Anda.",
-        "username_label": "Username / Email",
-        "username_placeholder": "Masukkan username atau email anda",
-        "username_required": "Username atau email wajib diisi",
-        "password_label": "Kata Sandi",
-        "password_placeholder": "Masukkan kata sandi anda",
-        "password_required": "Password wajib diisi",
-        "remember_me": "Ingat Saya",
-        "forgot_password": "Lupa Kata Sandi?",
-        "login_button": "Masuk",
-        "or_sign_in_with": "atau masuk dengan",
-        "dont_have_account": "Belum punya akun?",
-        "sign_up": "Daftar",
-        "copyright": "Hak Cipta © 2026 PT Greatsoft Solusi Indonesia. Seluruh hak cipta dilindungi.",
-        "slider": {
-            "slide1": {
-                "title_1": "Selamat Datang di",
-                "title_highlight": "Greatsoft",
-                "title_2": "Internship.",
-                "description": "Platform pendaftaran magang resmi PT Greatsoft Solusi Indonesia untuk talenta muda berbakat."
-            },
-            "slide2": {
-                "title_1": "Kembangkan",
-                "title_highlight": "Karirmu",
-                "description": "Dapatkan pengalaman kerja nyata dan bimbingan langsung dari para profesional di bidang teknologi."
-            },
-            "slide3": {
-                "title_1": "Proses",
-                "title_highlight": "Transparan",
-                "description": "Pantau status pendaftaran dan penugasan magang Anda secara real-time melalui portal SIMASA."
-            }
-        }
-    },
-    "register": {
-        "title": "Pendaftaran",
-        "step1": {
-            "label": "Langkah 1",
-            "title": "Informasi Pribadi"
-        },
-        "step2": {
-            "label": "Langkah 2",
-            "title": "Detail Akademik"
-        },
-        "step3": {
-            "label": "Langkah 3",
-            "title": "Unggah CV"
-        },
-        "personal_info": {
-            "title": "Informasi Pribadi",
-            "description": "Harap berikan detail Anda sesuai dengan yang tertera pada dokumen resmi."
-        },
-        "academic_details": {
-            "title": "Detail Akademik"
-        },
-        "upload_cv": {
-            "title": "Unggah CV",
-            "placeholder": "Unggah file atau seret dan lepas",
-            "hint": "PDF hingga 10MB"
-        },
-        "form": {
-            "full_name": "Nama Lengkap",
-            "email": "Alamat Email",
-            "phone": "Nomor Telepon",
-            "university": "Universitas",
-            "major": "Jurusan",
-            "semester": "Semester Saat Ini",
-            "period": "Periode Magang",
-            "placeholders": {
-                "full_name": "Jane Doe",
-                "email": "jane{'@'}example.com",
-                "phone": "08123456789",
-                "university": "Universitas Negeri",
-                "major": "Teknik Informatika",
-                "semester": "Pilih Semester",
-                "period": "misal: Januari - Juni 2026"
-            }
-        },
-        "buttons": {
-            "back": "Kembali",
-            "next": "Langkah Selanjutnya",
-            "submit": "Kirim Pendaftaran"
-        },
-        "messages": {
-            "success": "Pendaftaran berhasil!",
-            "upload_failed": "Gagal mengunggah CV. Silakan coba lagi.",
-            "error": "Pendaftaran gagal. Silakan coba lagi.",
-            "validation": {
-                "full_name_required": "Nama lengkap wajib diisi",
-                "university_required": "Universitas wajib diisi",
-                "major_required": "Jurusan wajib diisi",
-                "semester_required": "Semester wajib diisi",
-                "phone_required": "Nomor telepon wajib diisi",
-                "phone_invalid": "Format nomor telepon tidak valid",
-                "email_required": "Email wajib diisi",
-                "email_invalid": "Format email tidak valid",
-                "email_exists": "Email ini sudah terdaftar dalam sistem",
-                "registration_exists": "Email ini sudah memiliki pendaftaran yang sedang diproses",
-                "period_required": "Periode magang wajib diisi",
-                "cv_required": "CV wajib diunggah",
-                "cv_type": "CV harus berupa file PDF",
-                "cv_size": "Ukuran CV maksimal 10MB"
-            }
-        }
+      "success": "Pendaftaran berhasil!",
+      "upload_failed": "Gagal mengunggah CV. Silakan coba lagi.",
+      "error": "Pendaftaran gagal. Silakan coba lagi.",
+      "validation": {
+        "full_name_required": "Nama lengkap wajib diisi",
+        "university_required": "Universitas wajib diisi",
+        "major_required": "Jurusan wajib diisi",
+        "semester_required": "Semester wajib diisi",
+        "phone_required": "Nomor telepon wajib diisi",
+        "phone_invalid": "Format nomor telepon tidak valid",
+        "email_required": "Email wajib diisi",
+        "email_invalid": "Format email tidak valid",
+        "email_exists": "Email ini sudah terdaftar dalam sistem",
+        "registration_exists": "Email ini sudah memiliki pendaftaran yang sedang diproses",
+        "period_required": "Periode magang wajib diisi",
+        "cv_required": "CV wajib diunggah",
+        "cv_type": "CV harus berupa file PDF",
+        "cv_size": "Ukuran CV maksimal 10MB"
+      }
     }
+  }
 }

@@ -6,6 +6,7 @@ const authStore = useAuthStore();
 const taskSvc = internshipTaskService();
 const studentId = computed(() => authStore.user?.id);
 const route = useRoute();
+const swal = useSwal();
 
 const tableData = ref({
   items: [],
@@ -23,6 +24,7 @@ const headers = computed(() => [
   { key: "deadline", title: "Deadline", sortable: true },
   { key: "status", title: "Status", align: "center" },
   { key: "grade", title: "Nilai", align: "center" },
+  { key: "submissionUrl", title: "Link Bukti", align: "center" },
   { key: "actions", title: "Aksi", align: "center", width: "15%" },
 ]);
 
@@ -47,7 +49,7 @@ const filterList = {
     { label: "Semua Status", value: "" },
     { label: "Baru Ditugaskan", value: "assigned" },
     { label: "Menunggu Penilaian", value: "submitted" },
-    { label: "Selesai / Lulus", value: "graded" },
+    { label: "Lulus/Dinilai", value: "graded" },
     { label: "Butuh Revisi", value: "revision_needed" },
   ],
 };
@@ -77,6 +79,10 @@ async function loadData() {
     isLoading.value = false;
   }
 }
+
+onMounted(() => {
+  loadData();
+});
 
 const handleAction = (task: any) => {
   selectedTask.value = task;
@@ -110,7 +116,7 @@ const getStatusLabel = (status: string) => {
     case "submitted":
       return "Menunggu Penilaian";
     case "graded":
-      return "Selesai / Lulus";
+      return "Lulus/Dinilai";
     case "revision_needed":
       return "Butuh Revisi";
     default:
@@ -149,8 +155,20 @@ const handleSubmit = (task: any) => {
 // SSE: Auto-refresh when Mentor assigns new task or grades
 const { onEvent } = useSocket();
 onEvent("new_notification", (data: any) => {
-  if (data.type === "task" || data.type === "task_graded" || data.type === "task_revision") {
+  if (
+    data.type === "task" ||
+    data.type === "task_graded" ||
+    data.type === "task_revision"
+  ) {
     loadData();
+
+    if (data.type === "task_graded") {
+      swal.success(data.title || "Tugas Dinilai", data.message);
+    } else if (data.type === "task_revision") {
+      swal.warning(data.title || "Tugas Perlu Direvisi", data.message);
+    } else if (data.type === "task") {
+      swal.info(data.title || "Tugas Baru", data.message);
+    }
   }
 });
 </script>
@@ -169,8 +187,25 @@ onEvent("new_notification", (data: any) => {
       </h1>
     </div>
 
+    <!-- Empty State -->
+    <div
+      v-if="tableData.items.length === 0 && !isLoading"
+      class="flex flex-col items-center justify-center py-12 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
+    >
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 mb-4">
+        <UiIcon name="mdi-clipboard-text-outline" size="lg" />
+      </div>
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+        Belum ada tugas yang diberikan saat ini.
+      </h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 text-center max-w-md">
+        Tetap pantau halaman ini untuk melihat tugas-tugas yang diberikan oleh mentor Anda.
+      </p>
+    </div>
+
     <!-- Table -->
     <TableList
+      v-if="tableData.items.length > 0 || isLoading"
       :showHeader="false"
       :headers="headers"
       :tableData="tableData"
@@ -186,6 +221,19 @@ onEvent("new_notification", (data: any) => {
         <div class="text-sm text-slate-900 dark:text-slate-300">
           {{ item.mentor?.name || item.mentorName || "-" }}
         </div>
+      </template>
+
+      <template v-slot:[`item.submissionUrl`]="{ value }">
+        <a
+          v-if="value"
+          :href="value"
+          target="_blank"
+          class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          title="Lihat Bukti"
+        >
+          <UiIcon name="mdi-link-variant" size="sm" />
+        </a>
+        <span v-else class="text-slate-400 text-sm">-</span>
       </template>
 
       <template v-slot:[`item.deadline`]="{ value, item }">

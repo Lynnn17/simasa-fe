@@ -85,7 +85,7 @@ const validateWithRules = (value: File | File[] | null): boolean | string => {
       });
 
       if (!isAccepted) {
-        return t("import.error_invalid_type");
+        return "Format file tidak didukung. Gunakan PDF";
       }
     }
   }
@@ -222,7 +222,7 @@ const validateFile = (file: File): string | null => {
     });
 
     if (!isAccepted) {
-      return t("import.error_invalid_type");
+      return "Format file tidak didukung. Gunakan PDF";
     }
   }
 
@@ -453,4 +453,3 @@ defineExpose({
     </p>
   </div>
 </template>
-

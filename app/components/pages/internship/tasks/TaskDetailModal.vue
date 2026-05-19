@@ -31,11 +31,14 @@ const loadTaskFiles = async () => {
   }
 };
 
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
-    loadTaskFiles();
-  }
-});
+watch(
+  () => props.modelValue,
+  (isOpen) => {
+    if (isOpen) {
+      loadTaskFiles();
+    }
+  },
+);
 
 const getStatusBadgeVariant = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -58,7 +61,7 @@ const getStatusLabel = (status: string) => {
     case "submitted":
       return "Menunggu Penilaian";
     case "graded":
-      return "Selesai / Lulus";
+      return "Lulus/Dinilai";
     case "revision_needed":
       return "Butuh Revisi";
     default:
@@ -136,7 +139,9 @@ const linkify = (text: string) => {
       <!-- File yang dikumpulkan -->
       <div>
         <div class="flex items-center justify-between mb-3">
-          <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
+          <h4
+            class="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white"
+          >
             File yang Dikumpulkan
           </h4>
           <button
@@ -152,29 +157,34 @@ const linkify = (text: string) => {
         <div v-if="isLoadingFiles" class="flex justify-center py-8">
           <UiSpinner size="md" />
         </div>
-        
-        <div v-else-if="taskFiles.length > 0" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-          <div 
-            v-for="(file, index) in taskFiles" 
+
+        <div
+          v-else-if="taskFiles.length > 0"
+          class="grid grid-cols-2 sm:grid-cols-3 gap-4"
+        >
+          <div
+            v-for="(file, index) in taskFiles"
             :key="index"
             class="relative aspect-video rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 group bg-slate-100 dark:bg-slate-800"
           >
-            <img 
-              :src="taskSvc.getFileUrl(file.fileUrl)" 
+            <img
+              :src="taskSvc.getFileUrl(file.fileUrl)"
               class="w-full h-full object-cover cursor-pointer"
               @click="window.open(taskSvc.getFileUrl(file.fileUrl), '_blank')"
             />
-            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              <a 
-                :href="taskSvc.getFileUrl(file.fileUrl)" 
+            <div
+              class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2"
+            >
+              <a
+                :href="taskSvc.getFileUrl(file.fileUrl)"
                 target="_blank"
                 class="p-1.5 bg-white text-slate-900 rounded-full hover:bg-slate-100 shadow-lg"
                 title="Lihat Full"
               >
                 <UiIcon name="mdi-eye" size="sm" />
               </a>
-              <a 
-                :href="taskSvc.getFileUrl(file.fileUrl)" 
+              <a
+                :href="taskSvc.getFileUrl(file.fileUrl)"
                 download
                 class="p-1.5 bg-primary-500 text-white rounded-full hover:bg-primary-600 shadow-lg"
                 title="Download"
@@ -184,8 +194,11 @@ const linkify = (text: string) => {
             </div>
           </div>
         </div>
-        
-        <div v-else class="text-sm text-slate-500 italic p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+
+        <div
+          v-else
+          class="text-sm text-slate-500 italic p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl"
+        >
           Belum ada file yang dikumpulkan.
         </div>
       </div>

@@ -42,7 +42,6 @@ const filterSchema = computed(() => [
   },
 ]);
 
-
 const getAttendanceVariant = (status: string) => {
   switch (status) {
     case "Hadir":

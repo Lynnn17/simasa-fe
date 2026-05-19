@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/auth";
 import internshipLogbookService from "@/services/internship-logbook.service";
+import internshipAssignmentService from "@/services/internship-assignment.service";
 
 const authStore = useAuthStore();
 const logbookService = internshipLogbookService();
+const assignmentService = internshipAssignmentService();
+const { notify } = useNotification();
 const mentorId = computed(() => authStore.user?.id);
 const route = useRoute();
 
@@ -15,33 +18,35 @@ const isLoading = ref(false);
 const isQuickViewOpen = ref(false);
 const selectedLogbook = ref<any>(null);
 
+const submittedCount = ref(0);
+const belumMengisiCount = ref(0);
+
 const headers = computed(() => [
-  { key: "studentName", title: "Mahasiswa", sortable: true },
-  { key: "logDate", title: "Tanggal", sortable: true },
+  { key: "studentName", title: "Mahasiswa" },
+  { key: "todayStatus", title: "Status Hari Ini", align: "center" },
   { key: "activities", title: "Aktivitas" },
-  { key: "progressStatus", title: "Status Progress", align: "center" },
-  { key: "evidenceUrl", title: "Bukti", align: "center" },
   { key: "actions", title: "Aksi", align: "center", width: "10%" },
 ]);
 
 const filterSchema = computed(() => [
   {
-    name: "q",
-    type: "search" as const,
-    placeholder: "Cari mahasiswa atau aktivitas...",
-    colMd: 4,
-  },
-  {
     name: "date",
     type: "date" as const,
-    placeholder: "Filter Tanggal",
+    placeholder: "Pilih Tanggal",
+    default: new Date().toISOString().split("T")[0],
     colMd: 4,
   },
   {
-    name: "progressStatus",
+    name: "status",
     type: "select" as const,
     placeholder: "Semua Status",
     items: "statusOptions",
+    colMd: 4,
+  },
+  {
+    name: "q",
+    type: "search" as const,
+    placeholder: "Cari mahasiswa...",
     colMd: 4,
   },
 ]);
@@ -49,33 +54,90 @@ const filterSchema = computed(() => [
 const filterList = {
   statusOptions: [
     { label: "Semua Status", value: "" },
-    { label: "In Progress", value: "in_progress" },
-    { label: "Done", value: "done" },
-    { label: "Blocked", value: "blocked" },
+    { label: "Submitted", value: "Submitted" },
+    { label: "Pending", value: "Pending" },
+    { label: "Late", value: "Late" },
   ],
 };
+
+const hasNoStudents = ref(false);
 
 async function loadData() {
   if (!mentorId.value) return;
 
-  const { pageNumber, pageSize, q, progressStatus, date } = route.query;
+  const { q, date, status: filterStatus } = route.query;
   isLoading.value = true;
 
   try {
-    const params = {
-      pageNumber: pageNumber || 1,
-      pageSize: pageSize || 10,
-      search: q || "",
-      progressStatus: progressStatus || "",
-      date: date || "",
-    };
+    // 1. Fetch logbooks for specific date (API returns all students with status)
+    const selectedDate =
+      (date as string) || new Date().toISOString().split("T")[0];
+    const logbooksRes = await logbookService.getMentorDashboard(
+      mentorId.value,
+      { date: selectedDate },
+    );
+    const logbooks = logbooksRes?.data?.items || [];
 
-    const res: any = await logbookService.getMentorDashboard(mentorId.value, params);
-    const items = res?.data?.items || [];
+    // Check if mentor has no students at all
+    if (logbooks.length === 0 && !q && !filterStatus) {
+      hasNoStudents.value = true;
+    } else {
+      hasNoStudents.value = false;
+    }
+
+    // 2. Map items directly from API
+    let items = logbooks.map((item: any) => {
+      let status = "Pending";
+      let color = "warning";
+
+      const progressStatus = item.progressStatus?.toLowerCase();
+
+      // Jika sudah disubmit (ada tanggal submit), atau statusnya 'done', atau ID-nya bukan dummy 0000...
+      if (item.submittedAt || progressStatus === "done") {
+        status = "Submitted";
+        color = "success";
+      } else if (progressStatus === "late") {
+        status = "Late";
+        color = "danger";
+      } else if (progressStatus === "pending") {
+        status = "Pending";
+        color = "warning";
+      }
+
+      return {
+        ...item,
+        studentName: item.studentName || "Mahasiswa",
+        todayStatus: status,
+        statusColor: color,
+        activities: item.activities || "-",
+        logbook: item,
+      };
+    });
+
+    // Apply filters in frontend
+    if (q) {
+      const searchStr = (q as string).toLowerCase();
+      items = items.filter((item: any) =>
+        item.studentName.toLowerCase().includes(searchStr),
+      );
+    }
+
+    if (filterStatus) {
+      items = items.filter((item: any) => item.todayStatus === filterStatus);
+    }
+
     tableData.value = {
       items,
-      meta: res?.data?.meta || { totalItems: 0 },
+      meta: { totalItems: items.length },
     };
+
+    // Calculate summary
+    submittedCount.value = items.filter(
+      (i: any) => i.todayStatus === "Submitted",
+    ).length;
+    belumMengisiCount.value = items.filter(
+      (i: any) => i.todayStatus !== "Submitted",
+    ).length;
   } catch (error) {
     console.error("Failed to load mentor logbooks", error);
   } finally {
@@ -93,40 +155,39 @@ const actions = computed(() => [
   },
 ]);
 
-const openQuickView = (logbook: any) => {
-  selectedLogbook.value = logbook;
-  isQuickViewOpen.value = true;
+const openQuickView = (row: any) => {
+  if (row.logbook) {
+    selectedLogbook.value = row.logbook;
+    isQuickViewOpen.value = true;
+  } else {
+    notify({
+      title: "Informasi",
+      message: "Mahasiswa ini belum mengisi logbook hari ini.",
+      type: "info",
+      category: "logbook",
+    });
+  }
 };
 
-const getProgressBadgeVariant = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case "done":
+const getStatusBadgeVariant = (status: string) => {
+  switch (status) {
+    case "Submitted":
       return "success";
-    case "in_progress":
+    case "Pending":
       return "warning";
-    case "blocked":
+    case "Late":
       return "danger";
     default:
       return "neutral";
   }
 };
 
-const getProgressLabel = (status: string) => {
-  switch (status?.toLowerCase()) {
-    case "done":
-      return "Selesai";
-    case "in_progress":
-      return "In Progress";
-    case "blocked":
-      return "Terhambat";
-    default:
-      return status || "-";
-  }
-};
-
-// SSE: Auto-refresh when a student submits logbook
+// SSE: Auto-refresh when data changes
 const { onEvent } = useSocket();
 onEvent("refresh_logbooks", () => {
+  loadData();
+});
+onEvent("refresh_students", () => {
   loadData();
 });
 </script>
@@ -144,13 +205,47 @@ onEvent("refresh_logbooks", () => {
         Monitoring Logbook
       </h1>
       <p class="mt-1 text-sm text-slate-500">
-        Halaman ini hanya untuk melihat logbook mahasiswa bimbingan Anda.
+        Halaman ini menampilkan status logbook mahasiswa bimbingan Anda hari
+        ini.
       </p>
+    </div>
+
+    <!-- Empty State: No Students Assigned -->
+    <div
+      v-if="hasNoStudents"
+      class="flex flex-col items-center justify-center py-12 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
+    >
+      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-amber-50 text-amber-500 dark:bg-amber-900/20 mb-4">
+        <UiIcon name="mdi-account-group-outline" size="lg" />
+      </div>
+      <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
+        Belum ada mahasiswa yang ditugaskan kepada Anda.
+      </h3>
+      <p class="text-sm text-slate-500 dark:text-slate-400 text-center max-w-md">
+        Hubungi HRD untuk melakukan penugasan mahasiswa agar Anda dapat memantau logbook mereka di sini.
+      </p>
+    </div>
+
+    <!-- Summary Badges -->
+    <div class="flex gap-4" v-if="!hasNoStudents">
+      <div
+        class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 px-4 py-3 rounded-xl border border-emerald-100 dark:border-emerald-800/50 font-medium"
+      >
+        <UiIcon name="mdi-check-circle" class="text-emerald-500" />
+        <span>{{ submittedCount }} Submitted</span>
+      </div>
+      <div
+        class="flex items-center gap-2 bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-xl border border-amber-100 dark:border-amber-800/50 font-medium"
+      >
+        <UiIcon name="mdi-alert-circle" class="text-amber-500" />
+        <span>{{ belumMengisiCount }} Belum Mengisi</span>
+      </div>
     </div>
 
     <!-- Table -->
     <TableList
-      title="Daftar Logbook Mahasiswa"
+      v-if="!hasNoStudents"
+      title="Daftar Mahasiswa Bimbingan"
       :headers="headers"
       :tableData="tableData"
       :loading="isLoading"
@@ -162,41 +257,18 @@ onEvent("refresh_logbooks", () => {
     >
       <template v-slot:[`item.studentName`]="{ item }">
         <div class="font-medium text-slate-900 dark:text-white">
-          {{ item.studentName || item.student?.name || "Mahasiswa" }}
+          {{ item.studentName }}
         </div>
       </template>
 
-      <template v-slot:[`item.logDate`]="{ value }">
-        {{
-          new Date(value).toLocaleDateString("id-ID", {
-            weekday: "short",
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })
-        }}
+      <template v-slot:[`item.todayStatus`]="{ value }">
+        <UiBadge :variant="getStatusBadgeVariant(value)">
+          {{ value }}
+        </UiBadge>
       </template>
 
       <template v-slot:[`item.activities`]="{ value }">
         <p class="line-clamp-2 text-sm">{{ value }}</p>
-      </template>
-
-      <template v-slot:[`item.progressStatus`]="{ value }">
-        <UiBadge :variant="getProgressBadgeVariant(value)">
-          {{ getProgressLabel(value) }}
-        </UiBadge>
-      </template>
-
-      <template v-slot:[`item.evidenceUrl`]="{ value }">
-        <a
-          v-if="value"
-          :href="value"
-          target="_blank"
-          class="text-primary-600 hover:text-primary-700"
-        >
-          <UiIcon name="mdi-link-variant" size="sm" />
-        </a>
-        <span v-else>-</span>
       </template>
     </TableList>
 

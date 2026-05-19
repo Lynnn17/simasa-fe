@@ -28,6 +28,7 @@ const headers = computed(() => [
   { key: "deadline", title: "Deadline", sortable: true },
   { key: "status", title: "Status", align: "center" },
   { key: "grade", title: "Nilai", align: "center" },
+  { key: "submissionUrl", title: "Link Bukti", align: "center" },
   { key: "actions", title: "Aksi", align: "center", width: "15%" },
 ]);
 
@@ -240,6 +241,19 @@ onEvent("new_notification", (data: any) => {
         <div class="font-medium text-slate-900 dark:text-slate-300">
           {{ item.student?.name || item.studentName || "Mahasiswa" }}
         </div>
+      </template>
+
+      <template v-slot:[`item.submissionUrl`]="{ value }">
+        <a 
+          v-if="value" 
+          :href="value" 
+          target="_blank" 
+          class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+          title="Lihat Bukti"
+        >
+          <UiIcon name="mdi-link-variant" size="sm" />
+        </a>
+        <span v-else class="text-slate-400 text-sm">-</span>
       </template>
 
       <template v-slot:[`item.deadline`]="{ value }">

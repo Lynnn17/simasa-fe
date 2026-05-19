@@ -1,9 +1,6 @@
 <template>
   <div class="min-h-screen flex relative">
-    <!-- Language Switcher - Absolute Top Right -->
-    <div class="absolute top-6 right-6 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700">
-      <LayoutLanguageSwitcher />
-    </div>
+
     <!-- Left Side - Illustration with Blue Gradient -->
     <div
       class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary-50 via-primary-100 to-primary-50 relative overflow-hidden flex-col justify-center items-center p-12"
@@ -151,20 +148,7 @@
               </template>
             </UiInput>
 
-            <div class="flex items-center justify-between">
-              <!-- <label class="flex items-center gap-2 cursor-pointer">
-                <UiCheckbox v-model="form.remember" />
-                <span class="text-sm text-slate-600 dark:text-slate-400"
-                  >Remember Me</span
-                >
-              </label> -->
-              <a
-                href="#"
-                class="text-sm font-medium text-primary-500 hover:text-primary-600"
-              >
-                {{ $t('login.forgot_password') }}
-              </a>
-            </div>
+
 
             <UiButton
               type="submit"

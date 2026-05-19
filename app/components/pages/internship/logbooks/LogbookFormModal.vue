@@ -16,6 +16,7 @@ const emit = defineEmits<{
 
 const logbookService = internshipLogbookService();
 const swal = useSwal();
+const { notify } = useNotification();
 
 const isSubmitting = ref(false);
 
@@ -123,18 +124,49 @@ const onSubmit = handleSubmit(async (values) => {
 
     if (props.logbook?.id) {
       await logbookService.updateLogbook(props.logbook.id, payload);
-      swal.success("Berhasil", "Logbook berhasil diperbarui!");
+      notify({
+        title: "Berhasil",
+        message: "Logbook berhasil diperbarui!",
+        type: "success",
+        category: "logbook"
+      });
     } else {
       await logbookService.submitLogbook(payload);
-      swal.success("Berhasil", "Logbook berhasil disubmit!");
+      notify({
+        title: "Berhasil",
+        message: "Logbook berhasil disubmit!",
+        type: "success",
+        category: "logbook"
+      });
     }
     emit("refresh");
     close();
   } catch (error: any) {
-    swal.error(
-      "Gagal",
-      error?.response?._data?.message || "Gagal submit logbook",
-    );
+    const errorData = error?.response?._data;
+    const errorMsg = errorData?.message || errorData?.error || "Gagal submit logbook";
+    
+    if (errorMsg.includes("logbooks_student_id_log_date_key")) {
+      const dateVal = values.logDate;
+      const formattedDate = dateVal ? new Intl.DateTimeFormat("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric"
+      }).format(new Date(dateVal)) : "tersebut";
+      
+      notify({
+        title: "Gagal",
+        message: `Logbook tanggal ${formattedDate} sudah diisi`,
+        type: "error",
+        category: "logbook"
+      });
+    } else {
+      notify({
+        title: "Gagal",
+        message: errorMsg,
+        type: "error",
+        category: "logbook"
+      });
+    }
   } finally {
     isSubmitting.value = false;
   }

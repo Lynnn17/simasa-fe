@@ -60,7 +60,9 @@ const handleFinishInternship = async () => {
       emit("finished");
       closeModal();
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Gagal menyelesaikan magang");
+      toast.error(
+        error.response?.data?.message || "Gagal menyelesaikan magang",
+      );
     } finally {
       isFinishing.value = false;
     }
@@ -263,7 +265,7 @@ const handleFinishInternship = async () => {
 
     <template #actions>
       <div class="flex items-center justify-between w-full">
-        <UiButton
+        <!-- <UiButton
           v-if="detail"
           variant="danger"
           outline
@@ -272,7 +274,8 @@ const handleFinishInternship = async () => {
         >
           <i class="mdi mdi-account-off-outline mr-2"></i>
           Selesaikan Magang
-        </UiButton>
+        </UiButton> -->
+
         <div class="flex gap-2 ml-auto">
           <UiButton variant="ghost" @click="closeModal">Tutup</UiButton>
         </div>
