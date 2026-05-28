@@ -58,10 +58,6 @@ export default defineNuxtConfig({
         target: `${API_HOST}/v1`,
         changeOrigin: true,
       },
-      "/sse": {
-        target: process.env.NUXT_PUBLIC_SSE_URL || "http://localhost:8098",
-        changeOrigin: true,
-      },
     },
 
     // Production route rules - rewrites /api to /v1
@@ -69,9 +65,6 @@ export default defineNuxtConfig({
       // /api/users → http://localhost:8080/v1/users
       "/api/**": {
         proxy: `${API_HOST}/v1/**`,
-      },
-      "/sse/**": {
-        proxy: `${process.env.NUXT_PUBLIC_SSE_URL || "http://localhost:8098"}/**`,
       },
     },
   },

@@ -1,14 +1,15 @@
 <script setup lang="ts">
 /**
  * PendingRegistrationAlert - Internal notification component for HRD
- * Shows a persistent banner when there are new/pending internship applicants
+ * Shows a persistent banner when there are new/pending internship applicants.
+ * Auto-refreshes via SSE when a new registration comes in.
  */
 import internshipRegistrationService from "~/services/internship-registration.service";
 
 const regSvc = internshipRegistrationService();
 const pendingCount = ref(0);
 const isVisible = ref(false);
-const pollingInterval = ref<any>(null);
+
 
 const fetchPendingCount = async () => {
   try {
@@ -23,15 +24,14 @@ const fetchPendingCount = async () => {
 // Start polling on mount
 onMounted(() => {
   fetchPendingCount();
-  // Poll every 60 seconds
-  pollingInterval.value = setInterval(fetchPendingCount, 60000);
 });
 
-// Clean up polling on unmount
-onUnmounted(() => {
-  if (pollingInterval.value) {
-    clearInterval(pollingInterval.value);
-  }
+
+
+// SSE: langsung tampilkan banner saat ada pendaftar baru masuk
+const { onEvent } = useSocket();
+onEvent("refresh_registrations", () => {
+  fetchPendingCount();
 });
 
 // Refresh method to be exposed

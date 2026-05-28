@@ -181,16 +181,9 @@ function getCvUrl(row: RegistrationRow) {
 
 const { onEvent } = useSocket();
 
-// Listen for new registration notifications
-onEvent("new_notification", (data: any) => {
-  if (data.type === "registration") {
-    swalSvc.toast(data.message, "info");
-  }
-});
-
-// Listen for data refresh trigger
+// Listen for data refresh trigger — auto-refresh tabel saat ada pendaftar baru
 onEvent("refresh_registrations", () => {
-  refresh(); // This calls the useFetch refresh function
+  loadRegistrations();
 });
 </script>
 
