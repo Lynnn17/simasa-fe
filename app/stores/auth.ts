@@ -74,6 +74,7 @@ export const useAuthStore = defineStore("auth", {
             maxAge: Number(config.public.tokenMaxAge) || 60 * 60 * 24 * 7,
             path: "/",
             sameSite: "lax" as const,
+            secure: process.env.NODE_ENV === "production",
           });
           tokenCookie.value = accessToken;
 
@@ -132,6 +133,7 @@ export const useAuthStore = defineStore("auth", {
         maxAge: Number(config.public.tokenMaxAge),
         path: "/",
         sameSite: "lax" as const,
+        secure: process.env.NODE_ENV === "production",
       });
       tokenCookie.value = token;
 

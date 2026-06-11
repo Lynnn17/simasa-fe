@@ -154,9 +154,10 @@
               type="submit"
               size="lg"
               :loading="authStore.loading"
+              :disabled="isLockedOut"
               class="w-full !bg-primary-500 hover:!bg-primary-600 !border-primary-500 mt-3"
             >
-              Login
+              {{ isLockedOut ? `Terkunci (${lockoutTimer}s)` : 'Login' }}
             </UiButton>
           </UiForm>
 
@@ -235,12 +236,22 @@ const form = reactive({
 const usernameRules = [(v: string) => !!v || t("login.username_required")];
 const passwordRules = [(v: string) => !!v || t("login.password_required")];
 
+const failedAttempts = ref(0);
+const isLockedOut = ref(false);
+const lockoutTimer = ref(0);
+
 const handleSubmit = async () => {
+  if (isLockedOut.value) {
+    swal.toast(`Tunggu ${lockoutTimer.value} detik sebelum mencoba lagi`, "warning");
+    return;
+  }
+
   const isValid = await formRef.value?.validate();
   if (!isValid) return;
 
   const result = await authStore.login(form.username, form.password);
   if (result.success) {
+    failedAttempts.value = 0;
     const roleId = authStore.user?.roleId;
     let target = "/dashboard";
 
@@ -254,7 +265,22 @@ const handleSubmit = async () => {
 
     navigateTo(target, { external: true });
   } else {
-    swal.toast(result.error || "Login gagal. Silakan coba lagi.", "error");
+    failedAttempts.value++;
+    if (failedAttempts.value >= 5) {
+      isLockedOut.value = true;
+      lockoutTimer.value = 30; // 30 detik lockout
+      const interval = setInterval(() => {
+        lockoutTimer.value--;
+        if (lockoutTimer.value <= 0) {
+          isLockedOut.value = false;
+          failedAttempts.value = 0;
+          clearInterval(interval);
+        }
+      }, 1000);
+      swal.toast(`Terlalu banyak percobaan gagal. Silakan tunggu 30 detik.`, "error");
+    } else {
+      swal.toast(result.error || `Login gagal. Kesempatan: ${5 - failedAttempts.value} kali lagi.`, "error");
+    }
   }
 };
 </script>
