@@ -312,7 +312,7 @@ const isFormValid = ref(false);
 const isSubmitting = ref(false);
 
 const semesterOptions = Array.from({ length: 8 }, (_, index) => ({
-  label: `${t('register.form.semester')} ${index + 1}`,
+  label: `${index + 1}`,
   value: index + 1,
 }));
 

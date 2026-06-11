@@ -58,10 +58,6 @@ export default defineNuxtConfig({
         target: `${API_HOST}/v1`,
         changeOrigin: true,
       },
-      "/sse": {
-        target: process.env.NUXT_PUBLIC_SSE_URL || "http://localhost:8098",
-        changeOrigin: true,
-      },
     },
 
     // Production route rules - rewrites /api to /v1
@@ -70,14 +66,21 @@ export default defineNuxtConfig({
       "/api/**": {
         proxy: `${API_HOST}/v1/**`,
       },
-      "/sse/**": {
-        proxy: `${process.env.NUXT_PUBLIC_SSE_URL || "http://localhost:8098"}/**`,
-      },
     },
   },
 
-  // Route rules for caching
+  // Route rules for caching and security
   routeRules: {
+    // Global Security Headers
+    "/**": {
+      headers: {
+        "X-Frame-Options": "DENY",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+        "Content-Security-Policy": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' http://localhost:8098; img-src 'self' data: blob:;",
+      },
+    },
     // Static pages - prerender
     "/login": { prerender: true },
   },
