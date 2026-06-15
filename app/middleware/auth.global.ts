@@ -26,7 +26,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     const hasToken = !!authStore.token || !!tokenCookie.value;
     const isAuthenticated = authStore.isAuthenticated && hasToken;
 
-    if (isAuthenticated && (to.path === "/login" || to.path === "/")) {
+    if (isAuthenticated && (to.path === "/login" || to.path === "/" || to.path === "/register")) {
         const roleId = authStore.user?.roleId;
         let target = "/";
 

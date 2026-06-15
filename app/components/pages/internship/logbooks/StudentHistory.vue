@@ -25,6 +25,7 @@ const headers = computed(() => [
   { key: "activities", title: "Aktivitas", sortable: true },
   { key: "planTomorrow", title: "Rencana Besok", sortable: true },
   { key: "progressStatus", title: "Status Progress", align: "center" },
+  { key: "evidenceUrl", title: "Bukti", align: "center" },
   { key: "submittedAt", title: "Dikirim Pada", align: "center" },
   { key: "actions", title: "Aksi", align: "center", width: "15%" },
 ]);
@@ -309,6 +310,19 @@ const isWorkDay = computed(() => {
         <UiBadge :variant="getProgressBadgeVariant(value)">
           {{ getProgressLabel(value) }}
         </UiBadge>
+      </template>
+
+      <template v-slot:[`item.evidenceUrl`]="{ value, item }">
+        <a 
+          v-if="value || item?.evidenceURL" 
+          :href="value || item?.evidenceURL" 
+          target="_blank" 
+          class="inline-flex items-center gap-1 text-sm font-medium text-primary-600 hover:text-primary-700 hover:underline dark:text-primary-400 dark:hover:text-primary-300 transition-colors"
+        >
+          <UiIcon name="mdi-link-variant" size="sm" />
+          
+        </a>
+        <span v-else class="text-sm text-slate-400 dark:text-slate-500">-</span>
       </template>
 
       <template v-slot:[`item.submittedAt`]="{ value }">

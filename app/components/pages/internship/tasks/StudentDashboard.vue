@@ -8,6 +8,10 @@ const studentId = computed(() => authStore.user?.id);
 const route = useRoute();
 const swal = useSwal();
 
+const hasFilter = computed(() => {
+  return !!(route.query.q || route.query.status);
+});
+
 const tableData = ref({
   items: [],
   meta: { totalItems: 0 },
@@ -187,25 +191,8 @@ onEvent("new_notification", (data: any) => {
       </h1>
     </div>
 
-    <!-- Empty State -->
-    <div
-      v-if="tableData.items.length === 0 && !isLoading"
-      class="flex flex-col items-center justify-center py-12 px-4 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"
-    >
-      <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 mb-4">
-        <UiIcon name="mdi-clipboard-text-outline" size="lg" />
-      </div>
-      <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">
-        Belum ada tugas yang diberikan saat ini.
-      </h3>
-      <p class="text-sm text-slate-500 dark:text-slate-400 text-center max-w-md">
-        Tetap pantau halaman ini untuk melihat tugas-tugas yang diberikan oleh mentor Anda.
-      </p>
-    </div>
-
     <!-- Table -->
     <TableList
-      v-if="tableData.items.length > 0 || isLoading"
       :showHeader="false"
       :headers="headers"
       :tableData="tableData"

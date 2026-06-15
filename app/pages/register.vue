@@ -423,9 +423,13 @@ const handleSubmit = async (formValues: RegistrationForm) => {
         period: "",
         cv_file: null,
       });
-      formRef.value?.resetValidation();
-      formRef.value?.reset();
-      currentStep.value = 1; // Reset to first form step
+      
+      currentStep.value = 1; 
+      setTimeout(() => {
+        if (formRef.value) {
+          formRef.value.resetValidation();
+        }
+      }, 100);
     } else {
       useSwal().toast(
         result?.message || t("register.messages.error"),

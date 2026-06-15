@@ -67,18 +67,18 @@ const close = () => {
           </div>
         </section>
 
-        <section v-if="logbook.evidenceURL">
+        <section v-if="logbook.evidenceURL || logbook.evidenceUrl">
           <h4 class="text-sm font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
             <div class="w-1.5 h-4 bg-indigo-500 rounded-full"></div>
             Link Bukti (Evidence)
           </h4>
           <a 
-            :href="logbook.evidenceURL" 
+            :href="logbook.evidenceURL || logbook.evidenceUrl" 
             target="_blank" 
             class="inline-flex items-center gap-2 p-4 w-full rounded-xl bg-indigo-50/50 dark:bg-indigo-900/10 text-sm text-indigo-600 dark:text-indigo-400 hover:underline transition-colors"
           >
             <UiIcon name="mdi-link-variant" size="sm" />
-            {{ logbook.evidenceURL }}
+            {{ logbook.evidenceURL || logbook.evidenceUrl }}
           </a>
         </section>
       </div>

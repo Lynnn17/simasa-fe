@@ -204,7 +204,7 @@ const linkify = (text: string) => {
       </div>
 
       <!-- Area Penilaian (Feedback & Score) -->
-      <div v-if="task.status === 'graded' || task.status === 'revision_needed'">
+      <div v-if="task.status === 'graded' || task.status === 'revision_needed' || (task.status === 'submitted' && !!task.feedback)">
         <h4
           class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-2"
         >

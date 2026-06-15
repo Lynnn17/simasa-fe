@@ -38,9 +38,10 @@ const loadTaskFiles = async () => {
 
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen && props.task) {
+    const isNewSubmission = props.task.status === 'submitted';
     form.value = {
       grade: props.task.grade || null,
-      feedback: props.task.feedback || "",
+      feedback: isNewSubmission ? "" : (props.task.feedback || ""),
     };
     loadTaskFiles();
   }
