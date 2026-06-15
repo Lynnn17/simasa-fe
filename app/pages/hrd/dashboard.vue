@@ -145,7 +145,6 @@ onEvent("monitoring_update", () => {
 
     <!-- Monitoring Table -->
     <TableList
-      v-if="tableData.items.length > 0 || isLoading || isFirstLoad"
       :showHeader="false"
       :headers="headers"
       :tableData="tableData"
@@ -201,40 +200,6 @@ onEvent("monitoring_update", () => {
         </UiBadge>
       </template>
     </TableList>
-
-    <!-- Empty State -->
-    <div
-      v-else
-      class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 flex flex-col items-center text-center space-y-6 shadow-sm"
-    >
-      <div
-        class="h-24 w-24 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-700"
-      >
-        <i class="mdi mdi-account-search-outline text-6xl"></i>
-      </div>
-      <div class="max-w-md">
-        <h3 class="text-xl font-bold text-slate-900 dark:text-white">
-          Tidak Ada Mahasiswa Magang Aktif
-        </h3>
-        <p class="text-slate-500 dark:text-slate-400 mt-2">
-          Saat ini belum ada mahasiswa yang terdaftar atau aktif dalam masa
-          magang pada tanggal ini. Silakan periksa pendaftaran baru atau
-          tugaskan mentor untuk memulai.
-        </p>
-      </div>
-      <div class="flex flex-col sm:flex-row gap-3">
-        <NuxtLink to="/internship/registrations">
-          <UiButton variant="primary" class="!px-8">
-            <i class="mdi mdi-account-plus-outline mr-2"></i>
-            Kelola Pendaftaran
-          </UiButton>
-        </NuxtLink>
-        <UiButton variant="ghost" @click="loadMonitoringData">
-          <i class="mdi mdi-refresh mr-2"></i>
-          Refresh Data
-        </UiButton>
-      </div>
-    </div>
 
     <!-- Modals -->
     <PagesHrdStudentQuickViewModal

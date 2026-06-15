@@ -159,6 +159,9 @@ watch(
   (newVal) => {
     if (newVal !== fieldValue.value) {
       fieldValue.value = newVal;
+      if (!newVal && fileInput.value) {
+        fileInput.value.value = "";
+      }
     }
   },
   { immediate: true },

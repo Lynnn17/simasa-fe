@@ -73,7 +73,7 @@ const filterSchema = computed(() => [
 const filterList = {
   statusOptions: [
     { label: "Semua Status", value: "" },
-    { label: "Pending", value: "pending" },
+    { label: "Menunggu", value: "pending" },
     { label: "Diterima", value: "accepted" },
     { label: "Ditolak", value: "rejected" },
   ],
@@ -161,6 +161,10 @@ async function handleStatusUpdate(item: any, status: string) {
 
 function getStatusLabel(status?: string) {
   if (!status) return "-";
+  const s = status.toLowerCase();
+  if (s === "accepted") return "Diterima";
+  if (s === "rejected") return "Ditolak";
+  if (s === "pending") return "Menunggu";
   return status.replace(/_/g, " ");
 }
 

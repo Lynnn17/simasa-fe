@@ -42,6 +42,7 @@ const handleFileChange = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files) {
     addFiles(Array.from(target.files));
+    target.value = ''; 
   }
 };
 
