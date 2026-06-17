@@ -78,12 +78,9 @@ async function loadData() {
     );
     const logbooks = logbooksRes?.data?.items || [];
 
-    // Check if mentor has no students at all
-    if (logbooks.length === 0 && !q && !filterStatus) {
-      hasNoStudents.value = true;
-    } else {
-      hasNoStudents.value = false;
-    }
+    // We no longer use hasNoStudents because backend filters by date, 
+    // which causes the empty state to appear incorrectly. We will just show the empty table.
+    hasNoStudents.value = false;
 
     // 2. Map items directly from API
     let items = logbooks.map((item: any) => {
