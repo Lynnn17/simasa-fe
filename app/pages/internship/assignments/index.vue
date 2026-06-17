@@ -335,9 +335,6 @@ onMounted(() => {
         <div class="font-medium text-slate-900 dark:text-white">
           {{ item.studentName }}
         </div>
-        <div class="text-xs text-slate-500">
-          {{ item.studentEmail || "-" }}
-        </div>
       </template>
 
       <template v-slot:[`item.assignedAt`]="{ value }">
