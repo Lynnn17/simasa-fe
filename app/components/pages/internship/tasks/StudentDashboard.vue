@@ -127,6 +127,24 @@ const getStatusLabel = (status: string) => {
       return status || "Assigned";
   }
 };
+
+const getAverageScore = (grade: any) => {
+  if (grade === null || grade === undefined) return "-";
+  try {
+    const parsed = typeof grade === 'string' ? JSON.parse(grade) : grade;
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      const keys = Object.keys(parsed);
+      if (keys.length === 0) return 0;
+      let total = 0;
+      keys.forEach((k: any) => total += Number(parsed[k].skor || 0));
+      return Math.round(total / keys.length);
+    }
+    return parsed;
+  } catch(e) {
+    return grade;
+  }
+};
+
 const actions = computed(() => [
   {
     key: "detail",
@@ -257,12 +275,12 @@ onEvent("new_notification", (data: any) => {
         <span
           v-if="item.status === 'graded'"
           class="text-emerald-600 font-semibold"
-          >{{ value }}</span
+          >{{ getAverageScore(value) }}</span
         >
         <span
           v-else-if="item.status === 'revision_needed'"
           class="text-red-600 font-semibold"
-          >{{ value || 0 }}</span
+          >{{ getAverageScore(value) || 0 }}</span
         >
         <span v-else>-</span>
       </template>

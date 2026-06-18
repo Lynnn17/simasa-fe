@@ -167,6 +167,23 @@ const getStatusLabel = (status: string) => {
   }
 };
 
+const getAverageScore = (grade: any) => {
+  if (grade === null || grade === undefined) return "-";
+  try {
+    const parsed = typeof grade === 'string' ? JSON.parse(grade) : grade;
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      const keys = Object.keys(parsed);
+      if (keys.length === 0) return 0;
+      let total = 0;
+      keys.forEach((k: any) => total += Number(parsed[k].skor || 0));
+      return Math.round(total / keys.length);
+    }
+    return parsed;
+  } catch(e) {
+    return grade;
+  }
+};
+
 onMounted(() => {
   loadData(); // Ensure initial data load
   loadStudents();
@@ -277,9 +294,7 @@ onEvent("new_notification", (data: any) => {
       </template>
 
       <template v-slot:[`item.grade`]="{ value }">
-        <span class="font-semibold">{{
-          value !== null && value !== undefined ? value : "-"
-        }}</span>
+        <span class="font-semibold">{{ getAverageScore(value) }}</span>
       </template>
     </TableList>
 

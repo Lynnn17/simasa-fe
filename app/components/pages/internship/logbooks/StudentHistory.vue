@@ -113,7 +113,10 @@ async function loadData() {
     // Check if today's logbook is filled (only on initial load without filters)
     if (!q && !progressStatus) {
       const today = new Date();
-      const todayStr = today.toISOString().split("T")[0];
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
       const dayOfWeek = today.getDay();
 
       const hasFilled = items.some((l: any) => {

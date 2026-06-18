@@ -15,8 +15,14 @@ const taskSvc = internshipTaskService();
 const swal = useSwal();
 const isSubmitting = ref<string | null>(null);
 
+interface Aspect {
+  nama: string;
+  skor: number | null;
+  feedback_aspek: string;
+}
+
 const form = ref({
-  grade: null as number | null,
+  aspects: [] as Aspect[],
   feedback: "",
 });
 
@@ -39,8 +45,29 @@ const loadTaskFiles = async () => {
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen && props.task) {
     const isNewSubmission = props.task.status === 'submitted';
+    
+    let initialAspects: Aspect[] = [];
+    if (!isNewSubmission && props.task.grade) {
+      try {
+        const parsed = typeof props.task.grade === 'string' ? JSON.parse(props.task.grade) : props.task.grade;
+        if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+          initialAspects = Object.keys(parsed).map(k => ({
+            nama: parsed[k].nama || '',
+            skor: parsed[k].skor !== undefined ? parsed[k].skor : null,
+            feedback_aspek: parsed[k].feedback_aspek || '',
+          }));
+        } else {
+          initialAspects = [{ nama: 'Penilaian Umum', skor: Number(parsed), feedback_aspek: '' }];
+        }
+      } catch (e) {
+        initialAspects = [{ nama: 'Penilaian Umum', skor: Number(props.task.grade), feedback_aspek: '' }];
+      }
+    } else {
+      initialAspects = [{ nama: '', skor: null, feedback_aspek: '' }];
+    }
+
     form.value = {
-      grade: props.task.grade || null,
+      aspects: initialAspects,
       feedback: isNewSubmission ? "" : (props.task.feedback || ""),
     };
     loadTaskFiles();
@@ -51,15 +78,43 @@ const close = () => {
   emit("update:modelValue", false);
 };
 
+const addAspect = () => {
+  form.value.aspects.push({ nama: '', skor: null, feedback_aspek: '' });
+};
+
+const removeAspect = (index: number) => {
+  if (form.value.aspects.length > 1) {
+    form.value.aspects.splice(index, 1);
+  }
+};
+
 const handleGrade = async (status: string) => {
+  let gradeData: any = null;
+
   if (status === 'graded') {
-    if (form.value.grade === null || form.value.grade === undefined) {
-      swal.toast("Mohon isi skor penilaian", "warning");
+    if (form.value.aspects.length === 0) {
+      swal.toast("Minimal harus ada 1 aspek penilaian", "warning");
       return;
     }
-    if (form.value.grade < 0 || form.value.grade > 100) {
-      swal.toast("Skor penilaian harus antara 0 - 100", "warning");
-      return;
+    
+    gradeData = {};
+    for (let i = 0; i < form.value.aspects.length; i++) {
+      const a = form.value.aspects[i];
+      if (!a.nama || a.skor === null || a.skor === undefined) {
+        swal.toast("Mohon lengkapi nama dan skor pada semua aspek penilaian", "warning");
+        return;
+      }
+      if (a.skor < 0 || a.skor > 100) {
+        swal.toast("Skor aspek harus antara 0 - 100", "warning");
+        return;
+      }
+      
+      const key = `aspek_${i + 1}`;
+      gradeData[key] = {
+        nama: a.nama,
+        skor: Number(a.skor),
+        feedback_aspek: a.feedback_aspek || ""
+      };
     }
   }
 
@@ -71,7 +126,7 @@ const handleGrade = async (status: string) => {
   try {
     isSubmitting.value = status;
     await taskSvc.gradeTask(props.task.id, {
-      grade: status === 'graded' ? Number(form.value.grade) : null,
+      grade: gradeData,
       feedback: form.value.feedback,
       status: status,
     });
@@ -194,24 +249,51 @@ const linkify = (text: string) => {
 
       <!-- Form Penilaian -->
       <div>
-        <h4 class="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
-          Rubrik Penilaian
-        </h4>
-        <div class="space-y-4">
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-900 dark:text-white">
-              Skor (0 - 100)
-            </label>
-            <UiInput
-              v-model="form.grade"
-              type="number"
-              min="0"
-              max="100"
-              placeholder="Masukkan nilai..."
-              class="max-w-[200px]"
-            />
-            <p class="mt-1 text-xs text-slate-500">Kosongkan jika ingin meminta revisi.</p>
+        <div class="mb-4">
+          <h4 class="text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
+            Rubrik Penilaian
+          </h4>
+          <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Catatan: Anda tidak perlu mengisi/menyertakan aspek penilaian jika hanya ingin meminta revisi.
+          </p>
+        </div>
+        <div class="space-y-4 border-b border-slate-200 dark:border-slate-700 pb-4">
+          <div v-for="(aspect, index) in form.aspects" :key="index" class="p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 relative">
+            <button 
+              v-if="form.aspects.length > 1" 
+              @click="removeAspect(index)" 
+              class="absolute top-2 right-2 text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors dark:hover:bg-rose-900/20"
+              title="Hapus Aspek"
+            >
+              <UiIcon name="mdi-delete-outline" size="sm" />
+            </button>
+            <h5 class="text-xs font-semibold uppercase text-slate-500 mb-3">Aspek {{ index + 1 }}</h5>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+              <div class="md:col-span-3">
+                <label class="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-300">Nama Aspek *</label>
+                <UiInput v-model="aspect.nama" placeholder="Contoh: Fungsi Endpoint" required />
+              </div>
+              <div class="md:col-span-1">
+                <label class="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-300">Skor (0-100) *</label>
+                <UiInput v-model="aspect.skor" type="number" min="0" max="100" placeholder="0" required />
+              </div>
+            </div>
+            
+            <div>
+              <label class="mb-1 block text-xs font-medium text-slate-700 dark:text-slate-300">Feedback Aspek (Opsional)</label>
+              <UiInput v-model="aspect.feedback_aspek" placeholder="Komentar untuk aspek ini..." />
+            </div>
           </div>
+
+          <button 
+            type="button" 
+            @click="addAspect" 
+            class="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary-300 bg-primary-50 py-3 text-sm font-medium text-primary-700 hover:bg-primary-100 transition-colors dark:border-primary-800 dark:bg-primary-900/20 dark:text-primary-400 dark:hover:bg-primary-900/40"
+          >
+            <UiIcon name="mdi-plus" size="sm" />
+            Tambah Aspek Penilaian
+          </button>
 
           <div>
             <label class="mb-2 block text-sm font-medium text-slate-900 dark:text-white">
