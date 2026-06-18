@@ -84,6 +84,41 @@ const linkify = (text: string) => {
     return `<a href="${url}" target="_blank" class="text-primary-600 hover:underline dark:text-primary-400 font-medium">${url}</a>`;
   });
 };
+
+const getCriteria = (task: any) => {
+  if (!task || !task.criteria) return "";
+  try {
+    const parsed = JSON.parse(task.criteria);
+    return typeof parsed === 'string' ? parsed : task.criteria;
+  } catch (e) {
+    return task.criteria;
+  }
+};
+
+const getGradeData = (grade: any) => {
+  if (grade === null || grade === undefined) return null;
+  try {
+    const parsed = typeof grade === 'string' ? JSON.parse(grade) : grade;
+    if (typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)) {
+      return parsed;
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
+};
+
+const getAverageScore = (grade: any) => {
+  const data = getGradeData(grade);
+  if (data) {
+     const keys = Object.keys(data);
+     if (keys.length === 0) return 0;
+     let total = 0;
+     keys.forEach(k => total += Number(data[k].skor || 0));
+     return Math.round(total / keys.length);
+  }
+  return Number(grade) || 0;
+};
 </script>
 
 <template>
@@ -133,6 +168,19 @@ const linkify = (text: string) => {
         <div
           class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed"
           v-html="linkify(task.description)"
+        ></div>
+      </div>
+
+      <!-- Kriteria Penilaian -->
+      <div v-if="task.criteria">
+        <h4
+          class="text-sm font-semibold text-slate-900 dark:text-white uppercase tracking-wider mb-2"
+        >
+          Kriteria Penilaian
+        </h4>
+        <div
+          class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap leading-relaxed"
+          v-html="linkify(getCriteria(task))"
         ></div>
       </div>
 
@@ -217,7 +265,7 @@ const linkify = (text: string) => {
             class="bg-slate-50 px-4 py-3 border-b border-slate-200 dark:bg-slate-800/80 dark:border-slate-700 flex justify-between items-center"
           >
             <span class="text-sm font-medium text-slate-700 dark:text-slate-300"
-              >Skor Penilaian:</span
+              >Skor Keseluruhan:</span
             >
             <span
               class="text-lg font-bold"
@@ -229,17 +277,31 @@ const linkify = (text: string) => {
             >
               {{
                 task.grade !== null && task.grade !== undefined
-                  ? task.grade
+                  ? getAverageScore(task.grade)
                   : "0"
               }}
               / 100
             </span>
           </div>
+
+          <div v-if="getGradeData(task.grade)" class="p-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700">
+             <p class="text-xs text-slate-500 mb-3 uppercase tracking-wider font-semibold">Rincian Penilaian:</p>
+             <div class="space-y-3">
+                <div v-for="(aspect, key) in getGradeData(task.grade)" :key="key" class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-sm border border-slate-100 dark:border-slate-700/50">
+                   <div class="flex justify-between items-center mb-1">
+                      <span class="font-semibold text-slate-800 dark:text-slate-200">{{ aspect.nama }}</span>
+                      <span class="font-bold text-emerald-600 dark:text-emerald-400">{{ aspect.skor }} / 100</span>
+                   </div>
+                   <p v-if="aspect.feedback_aspek" class="text-slate-600 dark:text-slate-400 text-xs mt-2">{{ aspect.feedback_aspek }}</p>
+                </div>
+             </div>
+          </div>
+
           <div class="p-4 bg-white dark:bg-slate-900">
             <p
               class="text-xs text-slate-500 mb-1 uppercase tracking-wider font-semibold"
             >
-              Feedback Mentor:
+              Feedback Umum:
             </p>
             <p
               class="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap"

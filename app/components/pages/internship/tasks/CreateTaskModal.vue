@@ -27,6 +27,7 @@ const form = ref({
   studentId: "",
   title: "",
   description: "",
+  criteria: "",
   deadline: null as string | null,
 });
 
@@ -59,6 +60,15 @@ watch(
           studentId: props.task.studentId || props.task.student?.id || "",
           title: props.task.title || "",
           description: props.task.description || "",
+          criteria: (() => {
+            if (!props.task.criteria) return "";
+            try {
+              const parsed = JSON.parse(props.task.criteria);
+              return typeof parsed === 'string' ? parsed : props.task.criteria;
+            } catch (e) {
+              return props.task.criteria;
+            }
+          })(),
           deadline: formatDateForPicker(props.task.deadline),
         };
       } else {
@@ -66,6 +76,7 @@ watch(
           studentId: "",
           title: "",
           description: "",
+          criteria: "",
           deadline: null,
         };
       }
@@ -83,13 +94,13 @@ const handleCreate = async () => {
     return;
   }
 
-  // Validate deadline > today
-  const selectedDate = new Date(form.value.deadline);
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); // reset to start of day
+  // Validate deadline > now
+  const dateStr = (form.value.deadline as string).replace(' ', 'T');
+  const selectedDate = new Date(dateStr);
+  const now = new Date();
 
-  if (selectedDate <= today) {
-    swal.toast("Deadline harus lebih dari hari ini", "warning");
+  if (selectedDate <= now) {
+    swal.toast("Deadline harus lebih dari waktu saat ini", "warning");
     return;
   }
 
@@ -101,7 +112,8 @@ const handleCreate = async () => {
         studentId: form.value.studentId,
         title: form.value.title,
         description: form.value.description,
-        deadline: new Date(form.value.deadline as string).toISOString(),
+        criteria: form.value.criteria,
+        deadline: new Date((form.value.deadline as string).replace(' ', 'T')).toISOString(),
       });
       swal.success("Berhasil", "Tugas berhasil diperbarui");
     } else {
@@ -110,7 +122,8 @@ const handleCreate = async () => {
         studentId: form.value.studentId,
         title: form.value.title,
         description: form.value.description,
-        deadline: new Date(form.value.deadline as string).toISOString(),
+        criteria: form.value.criteria,
+        deadline: new Date((form.value.deadline as string).replace(' ', 'T')).toISOString(),
       });
       swal.success("Berhasil", "Tugas baru telah dibuat");
     }
@@ -189,6 +202,15 @@ const handleCreate = async () => {
           rows="4"
           required
           :rules="[(v: string) => !!v || 'Deskripsi Tugas wajib diisi.']"
+        />
+      </div>
+
+      <div>
+        <UiTextarea
+          v-model="form.criteria"
+          label="Kriteria Penilaian"
+          placeholder="Masukkan kriteria penilaian..."
+          rows="3"
         />
       </div>
     </div>
